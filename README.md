@@ -42,4 +42,7 @@ Durante o desenvolvimento, mapeamos e resolvemos "armadilhas" comuns dessa integ
 * **Idioma do PRTG:** Sensores automáticos puxam colunas em inglês (*Traffic Total*), enquanto sensores manuais/templates locais puxam em português (*Tráfego total*). Inspecionar o CSV bruto foi essencial para evitar falhas de leitura de colunas.
 
 ## 📸 Screenshots
-*(Adicione aqui imagens do seu painel final rodando bonitão!)*
+<img width="1598" height="763" alt="Painel-1" src="https://github.com/user-attachments/assets/0ff30b46-8ca3-4902-b4b6-813eb599ba60" />
+<img width="1663" height="834" alt="Painel-2" src="https://github.com/user-attachments/assets/61d13062-c4bd-4a4e-9e70-b5d1e4d73684" />
+
+
