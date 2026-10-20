@@ -20,9 +20,21 @@ Este projeto documenta a construção de dashboards dinâmicos no Grafana utiliz
 A integração consome os dados históricos no formato CSV e JSON, utilizando o *endpoint* de `historicdata` da API nativa do PRTG.
 > **📚 Documentação Oficial:** A documentação interativa (e completa) da API do PRTG é hospedada localmente no próprio servidor da aplicação. Ela pode ser acessada adicionando `/api.htm` à URL base do seu servidor (Ex: `https://<IP-DO-SEU-PRTG>/api.htm`).
 > ### 🔒 Estrutura da Requisição Segura
-Para proteger a infraestrutura e não expor credenciais no repositório, o padrão da URL inserida no Grafana segue o modelo abaixo, utilizando *Passhash* ao invés de senhas em texto plano:
+A autenticação **não fica na URL dos painéis**. Ela é configurada uma única vez no datasource Infinity, com uma **Chave de API somente leitura** do PRTG, que o Grafana guarda criptografada:
 
-```https://<IP-DO-SERVIDOR>/api/historicdata.csv?id=<ID-DO-SENSOR>&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}&username=<USUARIO-DA-API>&passhash=<SUA-CHAVE-PASSHASH>```
+1. No PRTG: **Setup → Configurações da conta → Chaves de API → Adicionar** (nível de acesso: **Acesso de leitura**).
+2. No Grafana: **Connections → Data sources → Infinity → Authentication**
+   * **Auth type:** `API Key`
+   * **Key:** `apitoken`
+   * **Value:** a chave gerada no PRTG
+   * **Add to:** `Query parameter`
+   * **Allowed hosts:** `https://<IP-DO-SERVIDOR>`
+
+Com isso, a URL usada nos painéis fica sem nenhuma credencial:
+
+```https://<IP-DO-SERVIDOR>/api/historicdata.csv?id=<ID-DO-SENSOR>&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}```
+
+> **Por que não `username` + `passhash` na URL?** Qualquer pessoa com acesso de visualização ao painel consegue ler a URL da consulta (em *Inspect → Query*) e, com ela, o passhash da conta. Na Chave de API guardada no datasource, isso não acontece. Ela também pode ser revogada a qualquer momento sem trocar a senha de ninguém.
 
 ## 🏗️ Arquitetura da Solução
 Para fazer as ferramentas conversarem de forma estável, foi desenvolvida uma "esteira de tratamento de dados" dentro do próprio Grafana.
@@ -40,6 +52,8 @@ Durante o desenvolvimento, mapeamos e resolvemos "armadilhas" comuns dessa integ
 * **Erro de Data Nula:** O PRTG exporta datas com traços (`YYYY-MM-DD`). Forçar barras (`DD/MM/YYYY`) no Grafana quebra a leitura, gerando tabelas vazias e impedindo qualquer cálculo matemático subsequente.
 * **Conflito de Letras nas Queries:** O Grafana insere prefixos alfabéticos em múltiplas consultas. A matemática só funciona se a variável no cálculo referenciar exatamente o nome exibido na legenda final.
 * **Idioma do PRTG:** Sensores automáticos puxam colunas em inglês (*Traffic Total*), enquanto sensores manuais/templates locais puxam em português (*Tráfego total*). Inspecionar o CSV bruto foi essencial para evitar falhas de leitura de colunas.
+* **Chave de API no cabeçalho não funciona (PRTG 25.1):** O PRTG respondeu `401 Unauthorized` para `Authorization: Bearer <chave>` e só aceitou a chave como parâmetro `apitoken=` na URL. Por isso, no Infinity, a chave é enviada como *Query parameter*, e não como *Bearer token*.
+* **Encoding ao automatizar pela API do Grafana:** No Windows PowerShell 5.1, `Invoke-RestMethod` lê o JSON do Grafana com a codificação errada e corrompe acentos e emojis dos títulos. Se o painel for salvo de volta assim, os textos ficam estragados. A leitura precisa decodificar a resposta explicitamente como UTF-8.
 
 ## 📸 Screenshots
 <img width="1598" height="763" alt="Painel-1" src="https://github.com/user-attachments/assets/0ff30b46-8ca3-4902-b4b6-813eb599ba60" />
