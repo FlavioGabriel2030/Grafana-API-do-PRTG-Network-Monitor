@@ -62,7 +62,7 @@ A pasta [`v2-topologia-viva`](v2-topologia-viva/) traz a evolução do projeto:
 * **Lista de ocorrências em aberto** filtrada (sem "Incomum", SSL agrupado, problemas conhecidos à parte).
 * Sincronização automática das TVs, vigia que reinicia o servidor e **deploy em container** (`docker compose`).
 
-Detalhes, fórmulas e como rodar: [v2-topologia-viva/README.md](v2-topologia-viva/README.md).
+Detalhes, fórmulas e como rodar: [v2-topologia-viva/README.md](v2-topologia-viva/README.md). Histórico: [CHANGELOG.md](CHANGELOG.md).
 
 * **Concorrência no PRTG:** muitas consultas simultâneas à API (vários painéis abertos) fazem o PRTG responder 401/400 de forma intermitente, mesmo com a chave certa. A V2 resolve com uma fila de 4 consultas em paralelo, novas tentativas e cache.
 * **`localhost` x `127.0.0.1` no Windows:** `localhost` pode resolver para IPv6 (`::1`) e a conexão é recusada se o serviço só escuta IPv4. Nas URLs do Grafana, use `127.0.0.1`.
