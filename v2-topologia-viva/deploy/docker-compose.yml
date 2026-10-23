@@ -1,0 +1,46 @@
+# NOC NOC: Grafana + Topologia viva.
+# Uso: copie .env.example para .env, preencha e rode:  docker compose up -d
+name: noc-topologia
+
+services:
+  grafana:
+    image: grafana/grafana:13.1.0
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?defina GRAFANA_ADMIN_PASSWORD no .env}
+      GF_PLUGINS_PREINSTALL: yesoreyeram-infinity-datasource
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+      PRTG_URL: ${PRTG_URL:?defina PRTG_URL no .env}
+      TOPO_PROXY_TOKEN: ${TOPO_PROXY_TOKEN:?defina TOPO_PROXY_TOKEN no .env}
+    volumes:
+      - grafana-dados:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q ok"]
+      interval: 60s
+      timeout: 5s
+      start_period: 60s
+
+  topologia:
+    build: ..
+    restart: unless-stopped
+    ports: ["8090:8090"]
+    environment:
+      PRTG_URL: ${PRTG_URL}
+      TOPO_PRTG_APIKEY: ${PRTG_APIKEY_LEITURA:?defina PRTG_APIKEY_LEITURA no .env}
+      GRAFANA_URL: http://grafana:3000
+      TOPO_PROXY_TOKEN: ${TOPO_PROXY_TOKEN}
+      GRAFANA_PUBLICO: ${GRAFANA_ROOT_URL:-}
+      TOPO_USUARIO: ${TOPO_USUARIO:-noc}
+      TOPO_SENHA_SHA256: ${TOPO_SENHA_SHA256:?defina TOPO_SENHA_SHA256 no .env}
+    volumes:
+      - ../config.json:/app/config.json:ro
+    depends_on: [grafana]
+
+volumes:
+  grafana-dados:

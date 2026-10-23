@@ -55,6 +55,18 @@ Durante o desenvolvimento, mapeamos e resolvemos "armadilhas" comuns dessa integ
 * **Chave de API no cabeçalho não funciona (PRTG 25.1):** O PRTG respondeu `401 Unauthorized` para `Authorization: Bearer <chave>` e só aceitou a chave como parâmetro `apitoken=` na URL. Por isso, no Infinity, a chave é enviada como *Query parameter*, e não como *Bearer token*.
 * **Encoding ao automatizar pela API do Grafana:** No Windows PowerShell 5.1, `Invoke-RestMethod` lê o JSON do Grafana com a codificação errada e corrompe acentos e emojis dos títulos. Se o painel for salvo de volta assim, os textos ficam estragados. A leitura precisa decodificar a resposta explicitamente como UTF-8.
 
+## 🛰️ V2: Topologia viva e telas de NOC
+A pasta [`v2-topologia-viva`](v2-topologia-viva/) traz a evolução do projeto:
+* **Intermediário com fila e cache** entre o Grafana e o PRTG, que elimina os erros intermitentes (401/400) quando vários painéis consultam ao mesmo tempo.
+* **Telas para TV** que não precisam de clique: Topologia, **Fluxo** (animação do tráfego, com cor e velocidade pelo tempo de resposta) e **Mosaico**, com playlist automática.
+* **Lista de ocorrências em aberto** filtrada (sem "Incomum", SSL agrupado, problemas conhecidos à parte).
+* Sincronização automática das TVs, vigia que reinicia o servidor e **deploy em container** (`docker compose`).
+
+Detalhes, fórmulas e como rodar: [v2-topologia-viva/README.md](v2-topologia-viva/README.md).
+
+* **Concorrência no PRTG:** muitas consultas simultâneas à API (vários painéis abertos) fazem o PRTG responder 401/400 de forma intermitente, mesmo com a chave certa. A V2 resolve com uma fila de 4 consultas em paralelo, novas tentativas e cache.
+* **`localhost` x `127.0.0.1` no Windows:** `localhost` pode resolver para IPv6 (`::1`) e a conexão é recusada se o serviço só escuta IPv4. Nas URLs do Grafana, use `127.0.0.1`.
+
 ## 📸 Screenshots
 <img width="1598" height="763" alt="Painel-1" src="https://github.com/user-attachments/assets/0ff30b46-8ca3-4902-b4b6-813eb599ba60" />
 <img width="1663" height="834" alt="Painel-2" src="https://github.com/user-attachments/assets/61d13062-c4bd-4a4e-9e70-b5d1e4d73684" />

@@ -1,0 +1,13 @@
+# Fonte de dados do PRTG (plugin Infinity) apontando para o intermediário da topologia (cache + fila).
+# A chave do PRTG fica só no container "topologia"; o Grafana se identifica com TOPO_PROXY_TOKEN.
+apiVersion: 1
+datasources:
+  - name: yesoreyeram-infinity-datasource
+    uid: prtg-infinity
+    type: yesoreyeram-infinity-datasource
+    editable: false
+    jsonData:
+      allowedHosts: ["http://topologia:8090"]
+      httpHeaderName1: X-Topo-Token
+    secureJsonData:
+      httpHeaderValue1: ${TOPO_PROXY_TOKEN}

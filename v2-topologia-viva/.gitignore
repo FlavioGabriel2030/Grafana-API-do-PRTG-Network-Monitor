@@ -1,0 +1,5 @@
+config.json
+acesso.txt
+*.log
+.env
+__pycache__/

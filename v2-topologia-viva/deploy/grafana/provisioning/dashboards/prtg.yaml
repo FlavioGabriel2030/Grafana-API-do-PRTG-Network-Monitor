@@ -1,0 +1,9 @@
+# Carrega os painéis de grafana/dashboards; cada subpasta vira uma pasta no Grafana.
+apiVersion: 1
+providers:
+  - name: noc-topologia
+    type: file
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true

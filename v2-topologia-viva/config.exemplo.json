@@ -1,0 +1,237 @@
+{
+  "_ajuda": "Edite à vontade; o servidor recarrega sozinho. sensores = IDs do PRTG. itens = subcomponentes (ex.: VIPs). grupoNome = soma todos os devices de um grupo do PRTG. fixo = item de referência sem sensor. tipo da ligação: rede | reserva | externo | hipotese. conhecidos = problemas já registrados (não disparam destaque vermelho).",
+  "camadas": [
+    "Internet",
+    "Links",
+    "Borda",
+    "Entrada (F5)",
+    "Serviços ao público",
+    "Aplicação e dados",
+    "Núcleo"
+  ],
+  "nos": [
+    {
+      "id": "usuario",
+      "rotulo": "Usuário",
+      "sub": "navegador",
+      "camada": 0,
+      "fixo": true
+    },
+    {
+      "id": "link_principal",
+      "rotulo": "Link principal",
+      "sub": "operadora A · 1 Gbps",
+      "camada": 1,
+      "sensores": [
+        2001
+      ],
+      "capacidadeMbit": 1000
+    },
+    {
+      "id": "link_backup",
+      "rotulo": "Link backup",
+      "sub": "operadora B",
+      "camada": 1,
+      "sensores": [
+        2002
+      ],
+      "capacidadeMbit": 1000
+    },
+    {
+      "id": "fortigate",
+      "rotulo": "Firewall",
+      "sub": "borda",
+      "camada": 2,
+      "sensores": [
+        2003
+      ]
+    },
+    {
+      "id": "vpn",
+      "rotulo": "SSL VPN",
+      "sub": "acesso remoto",
+      "camada": 2,
+      "sensores": [
+        2004
+      ]
+    },
+    {
+      "id": "f5",
+      "rotulo": "Balanceador",
+      "sub": "entrada dos sites",
+      "camada": 3,
+      "sensores": [
+        2005
+      ]
+    },
+    {
+      "id": "site",
+      "rotulo": "Site institucional",
+      "sub": "www.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2101
+      ]
+    },
+    {
+      "id": "consulta",
+      "rotulo": "Consulta pública",
+      "sub": "consulta.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2102
+      ]
+    },
+    {
+      "id": "osticket",
+      "rotulo": "Chamados",
+      "sub": "central de suporte",
+      "camada": 4,
+      "sensores": [
+        2103
+      ]
+    },
+    {
+      "id": "banco",
+      "rotulo": "Bancos de dados",
+      "sub": "grupo do PRTG",
+      "camada": 5,
+      "fixo": true,
+      "grupoNome": "Bancos de dados"
+    },
+    {
+      "id": "virtual",
+      "rotulo": "Virtualização",
+      "sub": "hosts de VM",
+      "camada": 5,
+      "sensores": [
+        2201
+      ]
+    },
+    {
+      "id": "core1",
+      "rotulo": "Core 1",
+      "sub": "switch núcleo",
+      "camada": 6,
+      "sensores": [
+        2301
+      ]
+    },
+    {
+      "id": "core2",
+      "rotulo": "Core 2",
+      "sub": "switch núcleo",
+      "camada": 6,
+      "sensores": [
+        2302
+      ]
+    },
+    {
+      "id": "dns",
+      "rotulo": "AD / DNS",
+      "sub": "controladores de domínio",
+      "camada": 6,
+      "sensores": [
+        2303
+      ]
+    }
+  ],
+  "observadores": [
+    {
+      "id": "prtg",
+      "rotulo": "PRTG",
+      "sub": "o próprio monitor",
+      "sensores": [
+        1001,
+        1002
+      ]
+    },
+    {
+      "id": "grafana",
+      "rotulo": "Grafana",
+      "sub": "painéis e histórico",
+      "especial": "grafana"
+    }
+  ],
+  "ligacoes": [
+    [
+      "usuario",
+      "link_principal",
+      "rede"
+    ],
+    [
+      "link_principal",
+      "fortigate",
+      "rede"
+    ],
+    [
+      "link_backup",
+      "fortigate",
+      "reserva"
+    ],
+    [
+      "fortigate",
+      "vpn",
+      "rede"
+    ],
+    [
+      "fortigate",
+      "f5",
+      "rede"
+    ],
+    [
+      "f5",
+      "site",
+      "rede"
+    ],
+    [
+      "f5",
+      "consulta",
+      "rede"
+    ],
+    [
+      "fortigate",
+      "osticket",
+      "rede"
+    ],
+    [
+      "site",
+      "banco",
+      "rede"
+    ],
+    [
+      "consulta",
+      "banco",
+      "rede"
+    ],
+    [
+      "fortigate",
+      "core1",
+      "rede"
+    ],
+    [
+      "fortigate",
+      "core2",
+      "rede"
+    ],
+    [
+      "core1",
+      "dns",
+      "rede"
+    ],
+    [
+      "core1",
+      "virtual",
+      "rede"
+    ]
+  ],
+  "conhecidos": {
+    "2999": "Exemplo: sensor com problema já conhecido, aguardando a equipe."
+  },
+  "grafana": [
+    {
+      "nome": "NOC",
+      "caminho": "/d/prtg-noc"
+    }
+  ]
+}

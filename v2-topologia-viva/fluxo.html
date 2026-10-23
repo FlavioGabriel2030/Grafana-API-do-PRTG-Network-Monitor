@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxo NOC NOC</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{--bg:#04070d;--ink:#eaf2ff;--muted:#7f93b2;--line:#1c2a42;--ok:#27d17f;--warn:#ffc53d;--bad:#ff4d6a;--paused:#5b8dff;--known:#d6a64a;
+--cond:"Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;--mono:"JetBrains Mono",Consolas,monospace;color-scheme:dark}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--cond);overflow:hidden}
+canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+.topo{position:fixed;top:2vh;left:2vw;right:2vw;display:flex;align-items:flex-start;gap:2vw;pointer-events:none}
+.topo .k{font:600 clamp(11px,1.3vh,16px) var(--mono);letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.topo h1{margin:.1em 0 0;font-size:clamp(32px,5.5vh,78px);font-weight:800;line-height:.95}
+.topo h1 em{font-style:normal;color:var(--vc,var(--ok))}
+.hora{margin-left:auto;text-align:right}
+.hora b{display:block;font-size:clamp(38px,6.5vh,90px);font-weight:700;line-height:.9;font-variant-numeric:tabular-nums}
+.hora span{font:clamp(11px,1.3vh,16px) var(--mono);color:var(--muted)}
+#cartao{position:fixed;left:2vw;right:2vw;bottom:4vh;height:14vh;box-sizing:border-box;overflow:hidden;display:grid;grid-template-columns:24% 36% 14% minmax(0,1fr);gap:2vw;align-items:center;background:linear-gradient(160deg,rgba(20,32,54,.92),rgba(8,12,22,.92));border:1px solid var(--line);border-left:6px solid var(--c,var(--ok));border-radius:14px;padding:1.6vh 1.4vw;backdrop-filter:blur(6px);transition:opacity .6s,transform .6s}
+#cartao.saindo{opacity:0}
+#cartao .troca{transition:opacity .35s}#cartao .troca.apaga{opacity:.15}
+#cartao .r{font:600 clamp(11px,1.2vh,15px) var(--mono);letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+#cartao h2{margin:.15em 0;font-size:clamp(24px,4vh,56px);font-weight:800;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cartao>div{min-width:0}
+#cartao .st{font:700 clamp(14px,1.8vh,24px) var(--mono);color:var(--c)}
+#cartao .num{display:flex;gap:2vw;margin-top:1vh}
+#cartao .num div b{display:block;font-size:clamp(26px,4vh,54px);font-weight:700;line-height:1}
+#cartao .num div span{font:clamp(10px,1.1vh,14px) var(--mono);color:var(--muted)}
+#cartao svg{width:100%;height:8vh}
+#cartao .num{margin-top:0;overflow:hidden}
+#cartao .fila{min-width:0;height:10vh;overflow:hidden;border-left:1px solid var(--line);padding-left:1vw;display:flex;flex-direction:column}
+#cartao .fila .rolo{flex:1;min-height:0;overflow:hidden;mask-image:linear-gradient(transparent,#000 15%,#000 85%,transparent)}
+#cartao .fila .t{display:flex;align-items:center;gap:.6vw;white-space:nowrap;min-width:0;overflow:hidden;font:700 clamp(10px,1.15vh,14px) var(--mono);letter-spacing:.16em;color:#c9d6e6;text-transform:uppercase;margin-bottom:.5vh}
+#cartao .fila .t .pul{width:.7em;height:.7em;border-radius:50%;background:var(--pc);box-shadow:0 0 8px var(--pc);animation:pulsa 1.6s ease-in-out infinite}
+#cartao .fila .t .chip{flex:none;white-space:nowrap;font-weight:600;letter-spacing:.06em;text-transform:none;padding:.05em .55em;border-radius:99px;border:1px solid currentColor}
+@keyframes pulsa{50%{opacity:.35}}
+#cartao .fila ul{list-style:none;margin:0;padding:0;animation:sobe var(--d,20s) linear infinite}
+#cartao .fila li{display:flex;align-items:baseline;gap:.6em;font:clamp(11px,1.25vh,15px) var(--mono);color:#c9d6e6;white-space:nowrap;padding:.35vh 0;border-bottom:1px solid rgba(28,42,66,.6)}
+#cartao .fila li .ic{flex:none;width:1.4em;text-align:center;color:var(--c2)}
+#cartao .fila li .quem{flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:var(--ink)}
+#cartao .fila li .oque{min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#cartao .fila .rolo.parado{mask-image:none}#cartao .fila .rolo.parado ul{animation:none}
+@keyframes sobe{to{transform:translateY(-50%)}}
+#cartao .msg{font:clamp(11px,1.3vh,16px) var(--mono);color:var(--muted);margin-top:.4vh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rodape{position:fixed;left:2vw;bottom:1.2vh;right:2vw;display:flex;gap:2vw;white-space:nowrap;overflow:hidden;font:clamp(11px,1.3vh,16px) var(--mono);color:var(--muted);pointer-events:none}
+.rodape i{font-style:normal}
+#avisos{position:fixed;top:2vh;right:16vw;max-width:40vw;max-height:12vh;overflow:hidden;display:flex;flex-direction:column;gap:.6vh;align-items:flex-end;pointer-events:none}
+.aviso{background:rgba(8,12,22,.9);border:1px solid var(--c);border-left:6px solid var(--c);border-radius:10px;padding:1vh 1.2vw;display:flex;gap:1vw;align-items:baseline;animation:entra .5s ease-out;transition:opacity .8s,transform .8s}
+.aviso b{font-size:clamp(18px,2.4vh,32px);color:var(--c)}.aviso span{font:clamp(11px,1.2vh,15px) var(--mono);color:var(--muted)}
+.aviso.vai{opacity:0;transform:translateX(30px)}
+@keyframes entra{from{opacity:0;transform:translateX(40px)}}
+#erro{display:none;position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);background:#3a2a05;border:1px solid var(--warn);color:var(--warn);padding:10px 18px;border-radius:8px;font:15px var(--mono)}
+@media (prefers-reduced-motion:reduce){#cartao{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="tela"></canvas>
+<div class="topo"><div><div class="k">NOC · NOC · fluxo em tempo real</div><h1 id="titulo">Carregando…</h1></div><div class="hora"><b id="relogio">--:--</b><span id="data"></span></div></div>
+<div id="cartao" class="saindo"></div>
+<div class="rodape"><span id="coleta">—</span><i><b style="color:#38e1ff">●</b> ida (pedido) · <b style="color:#b69bff">●</b> volta (resposta) · cor = velocidade: <b style="color:#38e1ff">rápido</b> → <b style="color:#27d17f">normal</b> → <b style="color:#ffc53d">lento</b> · mais bolinhas = mais tráfego</i><i style="margin-left:auto;opacity:.45">Flavio-Gabriel</i><i><b style="color:var(--bad)">●</b> fora <b style="color:var(--warn)">●</b> aviso <b style="color:var(--paused)">●</b> pausado</i></div>
+<div id="avisos"></div>
+<div id="erro"></div>
+<script>
+'use strict';
+const COR={ok:'#27d17f',warn:'#ffc53d',bad:'#ff4d6a',paused:'#5b8dff',known:'#d6a64a',neutro:'#3f5577'};
+const ICO={usuario:'🧑',instatus:'🌍',link_principal:'🌐',link_backup:'🔁',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',lai:'📨',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗'};
+const pausadoSt=c=>[7,8,9,11,12].includes(c);
+const sevSt=c=>({5:6,13:6,14:6,4:4,10:3,7:1,8:1,9:1,11:1,12:1,3:0}[c]??0);
+const corSev=s=>s===6?COR.bad:s>=3?COR.warn:s===2?COR.known:s===1?COR.paused:COR.ok;
+const txtSev=s=>s===6?'FORA DO AR':s===4?'AVISO':s===3?'INCOMUM':s===2?'⚑ JÁ REGISTRADO':s===1?'⏸ PAUSADO':'FUNCIONANDO';
+const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const $=id=>document.getElementById(id);
+const cv=$('tela'); let g=cv.getContext('2d');
+let D=null, NOS={}, ARESTAS=[], PART=[], W=0, H=0, DPR=1, tour=[], tourI=-1, foco=null, FUNDO=null, ONDAS=[], ANTES={};
+const RASTRO=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function mbit(v){const m=String(v||'').match(/([\d.,]+)\s*([kMG])bit/i);if(!m)return null;return parseFloat(m[1].replace(/\./g,'').replace(',','.'))*({k:.001,M:1,G:1000}[m[2]]||1);}
+function ms(v){const m=String(v||'').match(/([\d.,]+)\s*ms/);return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null;}
+
+function avaliar(){
+  const sens=new Map(D.sensores.map(s=>[s.id,s])), conh=D.config.conhecidos||{}, out={};
+  const devs=new Map(); D.sensores.forEach(s=>{if(!devs.has(s.dev))devs.set(s.dev,[]);devs.get(s.dev).push(s);});
+  const doGrupo=nome=>{const ids=new Set(D.grupos.filter(x=>x.nome===nome).map(x=>x.id));let mud=true;while(mud){mud=false;D.grupos.forEach(x=>{if(ids.has(x.pai)&&!ids.has(x.id)){ids.add(x.id);mud=true;}});}return D.devices.filter(d=>ids.has(d.pai)).flatMap(d=>devs.get(d.id)||[]);};
+  D.config.nos.forEach(n=>{
+    let ss=[...new Set([...(n.sensores||[]),...(n.itens||[]).flatMap(i=>i.sensores||[])])].map(i=>sens.get(i)).filter(Boolean);
+    if(n.grupoNome) ss=ss.concat(doGrupo(n.grupoNome));
+    let sev=n.fixo?-1:0,pior=null,np=0;
+    ss.forEach(s=>{let v=sevSt(s.st);if(v>=3&&conh[String(s.id)])v=2;if(v===1)np++;if(v>sev){sev=v;pior=s;}});
+    if(ss.length&&np===ss.length) sev=1;
+    const base=n.valorDe?sens.get(n.valorDe):(n.capacidadeMbit||n.mostrarValor)?ss[0]:null;
+    const okN=ss.filter(x=>sevSt(x.st)<3||conh[String(x.id)]).length;
+    // ms para TODOS: o sensor principal; se não houver, o 1º com tempo (HTTP/Ping); em grupos, a mediana
+    let tms=base?ms(base.val):null, viaPing=false;
+    if(tms==null){const cand=ss.filter(x=>!pausadoSt(x.st)&&ms(x.val)!=null);
+      const http=cand.filter(x=>!/ping/i.test(x.nome)), usa=http.length?http:cand;
+      const vs=usa.map(x=>ms(x.val)).sort((a,b)=>a-b);
+      if(vs.length){tms=n.grupoNome?vs[Math.floor(vs.length/2)]:vs[0];viaPing=!http.length;}}
+    out[n.id]={n,sev,pior,base,total:ss.length,okN,ms:tms,viaPing,mb:base?mbit(base.val):null};
+  });
+  return out;
+}
+function layout(){
+  const cam=D.config.camadas.length, top=H*0.14, bot=H*0.77, esq=W*0.05, dir=W*0.95, off=W*0.042;
+  const porCam={}; D.config.nos.forEach(n=>(porCam[n.camada]??=[]).push(n.id));
+  Object.entries(porCam).forEach(([c,ids])=>{
+    /* só a coluna muito cheia (mais de 6) vira zigue-zague; as outras ficam em fila, com mais altura útil */
+    const cheia=ids.length>6, centro=esq+(dir-esq)*(+c)/(cam-1);
+    ids.forEach((id,i)=>{const x=centro+(cheia?(i%2?1:-1)*off:0), y=top+(bot-top)*(i+0.5)/ids.length;
+      const o=NOS[id]||{};NOS[id]=Object.assign(o,{x,y});});});
+}
+function montar(){
+  const av=avaliar();
+  Object.values(av).forEach(a=>{NOS[a.n.id]=Object.assign(NOS[a.n.id]||{},a);});
+  layout();
+  ARESTAS=(D.config.ligacoes||[]).filter(([a,b])=>NOS[a]&&NOS[b]).map(([a,b,t])=>{
+    const A=NOS[a],B=NOS[b];
+    // intensidade: tráfego medido (links) ou fluxo nominal; velocidade: resposta do destino
+    const mb=A.n&&A.n.capacidadeMbit?A.mb:(A.mb??null), carga=mb!=null?Math.min(1,mb/1000):0.25;
+        const bloq=A.sev===6||B.sev===6, cor=bloq?COR.bad:t==='hipotese'?COR.warn:B.sev>=3?COR.warn:B.sev===1?COR.paused:COR.ok;
+    return {a,b,t,carga,bloq,cor,medido:mb!=null,rot:mb!=null&&(a.startsWith('link')||b.startsWith('link'))?`${mb>=10?Math.round(mb):mb.toFixed(1)} Mbit/s`:(B.ms!=null?`${Math.round(B.ms)} ms`:'')};
+  });
+  rotas();
+  const alvo=Math.min(150,Math.round(ROTAS.reduce((s,r)=>s+r.peso,0)*2.2));
+  while(PART.length<alvo) PART.push(nova());
+  PART.length=Math.min(PART.length,alvo);
+  detectar();
+  tour=Object.values(NOS).filter(x=>x.sev>=0&&x.n&&x.n.camada>=1).sort((a,b)=>b.sev-a.sev||a.n.camada-b.n.camada).map(x=>x.n.id);
+  topo();
+}
+function detectar(){
+  Object.values(NOS).forEach(n=>{if(!n.n||n.sev<0)return;const ant=ANTES[n.n.id];ANTES[n.n.id]=n.sev;
+    if(ant===undefined||ant===n.sev)return;
+    const piorou=n.sev>ant&&n.sev>=3, voltou=ant>=3&&n.sev<3;
+    if(!piorou&&!voltou)return;
+    for(let k=0;k<3;k++)ONDAS.push({id:n.n.id,t:performance.now()+k*350,cor:piorou?corSev(n.sev):COR.ok});
+    aviso(`${piorou?'✕':'✓'} ${n.n.rotulo} ${piorou?txtSev(n.sev).toLowerCase():'voltou ao normal'}`,piorou?corSev(n.sev):COR.ok);
+  });
+}
+function aviso(txt,cor){const d=document.createElement('div');d.className='aviso';d.style.setProperty('--c',cor);
+  d.innerHTML=`<b>${esc(txt)}</b><span>${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>`;
+  $('avisos').prepend(d);setTimeout(()=>d.classList.add('vai'),9000);setTimeout(()=>d.remove(),10000);}
+// Rotas: do usuário (e de cada origem) até a ponta da cadeia, seguindo as ligações
+let ROTAS=[];
+function rotas(){
+  const sai={}, entra=new Set(); ARESTAS.forEach((e,i)=>{(sai[e.a]??=[]).push(i);entra.add(e.b);});
+  const origens=Object.keys(sai).filter(a=>!entra.has(a)); ROTAS=[];
+  const andar=(no,cam,vis)=>{const prox=(sai[no]||[]).filter(i=>!vis.has(ARESTAS[i].b));
+    if(!prox.length||cam.length>=6){if(cam.length)ROTAS.push({e:cam.slice()});return;}
+    prox.forEach(i=>{vis.add(ARESTAS[i].b);cam.push(i);andar(ARESTAS[i].b,cam,vis);cam.pop();vis.delete(ARESTAS[i].b);});};
+  origens.forEach(o=>andar(o,[],new Set([o])));
+  // peso da rota = tráfego do primeiro trecho medido (ou nominal)
+  // peso = tráfego MEDIDO no primeiro trecho que tem medição (link backup parado ≈ quase nada)
+  ROTAS.forEach(r=>{const m=r.e.map(i=>ARESTAS[i]).find(e=>e.medido);r.peso=m?(m.carga<0.002?0.003:m.carga*8):1;});
+}
+// Cor pela velocidade de resposta: ciano (rápido) → verde → amarelo (lento). Estado sobrepõe.
+/* Escala de velocidade (padrão para todos os serviços):
+   t = (ln(ms) − ln(30)) / (ln(300) − ln(30)), limitado a [0,1]
+   → 30 ms ou menos = 0 (ciano, rápido) · ~95 ms = 0,5 (verde, normal) · 300 ms ou mais = 1 (amarelo, lento).
+   Logarítmica porque, em tempo de resposta, dobrar de 20→40 ms pesa tanto quanto de 200→400 ms. */
+const V_RAPIDO=30, V_LENTO=300;
+function nivelVel(ms){if(ms==null)return 0;return Math.max(0,Math.min(1,(Math.log(Math.max(1,ms))-Math.log(V_RAPIDO))/(Math.log(V_LENTO)-Math.log(V_RAPIDO))));}
+function corVel(ms){const t=nivelVel(ms);
+  const a=t<.5?[56,225,255]:[39,209,127], b=t<.5?[39,209,127]:[255,197,61], u=t<.5?t*2:(t-.5)*2;
+  return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*u)).join(',')})`;}
+/* Cor e velocidade saem da MESMA decisão: amarelo nunca anda mais rápido que ciano.
+   nível 0 = rápido … 1 = lento; estados (aviso, pausa, hipótese) contam como lentos. */
+function msTrecho(e){const B=NOS[e.b],A=NOS[e.a];return (B&&B.ms)??(A&&A.ms)??null;}
+function nivelTrecho(e){const B=NOS[e.b];if(e.t==='hipotese')return 1;if(B&&B.sev>=3)return 1;if(B&&B.sev===1)return .8;return nivelVel(msTrecho(e));}
+function corTrecho(e){if(e.bloq)return COR.bad;if(e.t==='hipotese')return COR.warn;const B=NOS[e.b];if(B&&B.sev===1)return COR.paused;if(B&&B.sev>=3)return COR.warn;return corVel(msTrecho(e));}
+const PX_RAPIDO=240, PX_LENTO=60;  /* px/s numa tela de 1900 px de largura */
+function pxSeg(e){const t=nivelTrecho(e);return (PX_RAPIDO+(PX_LENTO-PX_RAPIDO)*t)*Math.max(.5,W/1900);}
+function compr(e){const c=curva(e),k=c.join();if(e._k===k)return e._len;let L=0,[x0,y0]=pt(c,0);
+  for(let i=1;i<=12;i++){const [x,y]=pt(c,i/12);L+=Math.hypot(x-x0,y-y0);x0=x;y0=y;}e._k=k;return e._len=Math.max(20,L);}
+function nova(){
+  if(!ROTAS.length)return {r:0,k:0,p:0,j:0,volta:false,vida:1};
+  const tot=ROTAS.reduce((s,r)=>s+r.peso,0);let x=Math.random()*tot,i=0;while(i<ROTAS.length-1&&(x-=ROTAS[i].peso)>0)i++;
+  const volta=Math.random()<.28;  // ~28% são respostas voltando ao usuário
+  const n=ROTAS[i].e.length, k=Math.floor(Math.random()*n);  /* começa num trecho qualquer: sem bolo no início */
+  return {r:i,k,p:Math.random(),j:(Math.random()-.5)*8,volta,vida:1,ant:null};
+}
+function curva(e){const A=NOS[e.a],B=NOS[e.b],dx=(B.x-A.x)/2;return [A.x,A.y,A.x+dx,A.y,B.x-dx,B.y,B.x,B.y];}
+function pt(c,t){const u=1-t;return [u*u*u*c[0]+3*u*u*t*c[2]+3*u*t*t*c[4]+t*t*t*c[6],u*u*u*c[1]+3*u*u*t*c[3]+3*u*t*t*c[5]+t*t*t*c[7]];}
+
+let ult=performance.now();
+function quadro(agora){
+  try{desenhar(agora);}catch(e){console.error('quadro',e);}
+  requestAnimationFrame(quadro);
+}
+let EST=null, ESTchave='';
+const raio=()=>Math.max(15,Math.min(W,H)*.025);
+function estatico(){
+  const chave=`${W}x${H}|${foco}|${D&&D.gerado}`; if(EST&&chave===ESTchave)return EST;
+  EST=EST||document.createElement('canvas'); EST.width=W*DPR; EST.height=H*DPR; ESTchave=chave;
+  const g0=g; g=EST.getContext('2d'); g.setTransform(DPR,0,0,DPR,0,0);
+  // ligações
+  ARESTAS.forEach(e=>{const c=curva(e),fo=foco&&(e.a===foco||e.b===foco);g.beginPath();g.moveTo(c[0],c[1]);g.bezierCurveTo(c[2],c[3],c[4],c[5],c[6],c[7]);
+    g.strokeStyle=e.bloq?'rgba(255,77,106,.55)':fo?'rgba(120,180,255,.55)':`rgba(70,95,130,${.3+e.carga*.4})`;g.lineWidth=fo?3:(1.5+e.carga*6);g.setLineDash(e.t==='hipotese'||e.t==='externo'||e.t==='reserva'?[6,7]:[]);g.stroke();g.setLineDash([]);
+    if(e.rot&&(e.rot.includes('Mbit')||fo)){const [x,y]=pt(c,.5);g.font=`600 ${Math.max(11,H*.013)}px JetBrains Mono, Consolas`;const w=g.measureText(e.rot).width+10;g.fillStyle='rgba(4,7,13,.8)';g.fillRect(x-w/2,y-9,w,18);g.fillStyle=fo?'#eaf2ff':'#9fb3cf';g.textAlign='center';g.textBaseline='middle';g.fillText(e.rot,x,y);}
+  });
+  // nós
+  const R=raio(), t=0;
+  Object.values(NOS).forEach(n=>{if(n.x==null||!n.n)return;const c=n.sev<0?COR.neutro:corSev(n.sev),fo=n.n.id===foco;
+    if(!n.n.capacidadeMbit&&n.total>=3){const p=n.okN/n.total,cc=p>=1?COR.ok:p>=.7?COR.warn:COR.bad;
+      g.beginPath();g.arc(n.x,n.y,R*1.28,-Math.PI/2,Math.PI*1.5);g.strokeStyle='rgba(60,80,110,.45)';g.lineWidth=3;g.stroke();
+      g.beginPath();g.arc(n.x,n.y,R*1.28,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(.02,p));g.strokeStyle=cc;g.lineWidth=3;g.lineCap='round';g.stroke();g.lineCap='butt';
+      if(p<1){g.font=`700 ${Math.max(10,R*.42)}px JetBrains Mono, Consolas`;g.fillStyle=cc;g.textAlign='left';g.fillText(`${n.okN}/${n.total}`,n.x+R*1.45,n.y-R*.95);g.textAlign='center';}}
+    if(n.n.capacidadeMbit&&n.mb!=null){const p=Math.min(1,n.mb/n.n.capacidadeMbit),cc=p>.8?COR.bad:p>.6?COR.warn:COR.ok;
+      g.beginPath();g.arc(n.x,n.y,R*1.32,-Math.PI/2,Math.PI*1.5);g.strokeStyle='rgba(60,80,110,.5)';g.lineWidth=5;g.stroke();
+      g.beginPath();g.arc(n.x,n.y,R*1.32,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(.02,p));g.strokeStyle=cc;g.lineWidth=5;g.lineCap='round';g.stroke();g.lineCap='butt';
+      g.font=`700 ${Math.max(11,R*.5)}px JetBrains Mono, Consolas`;g.fillStyle=cc;g.fillText(Math.round(p*100)+'%',n.x+R*1.9,n.y-R*.9);}
+    g.beginPath();g.arc(n.x,n.y,R,0,Math.PI*2);g.fillStyle='#0d1626';g.fill();g.lineWidth=n.sev>=3?4:2.5;g.strokeStyle=c;g.stroke();
+    g.font=`${R*.95}px Segoe UI Emoji, sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(ICO[n.n.id]||'⬢',n.x,n.y+1);
+    g.font=`700 ${Math.max(12,R*.62)}px Barlow Condensed, Arial Narrow, sans-serif`;g.fillStyle=n.sev>=3?c:'#dbe6f5';g.fillText(n.n.rotulo,n.x,n.y+R*1.55);
+    const v=n.ms!=null?`${n.viaPing?'ping ':''}${Math.round(n.ms)} ms`:n.mb!=null?`${Math.round(n.mb)} Mbit/s`:'';
+    if(v){g.font=`600 ${Math.max(10,R*.45)}px JetBrains Mono, Consolas`;g.fillStyle='#8ea0b6';g.fillText(v,n.x,n.y+R*2.15);}
+  });
+  g=g0; return EST;
+}
+// Brilho pronto (sprite) por cor: muito mais leve que shadowBlur em cada bolinha
+const SPR={};
+function sprite(cor){if(SPR[cor])return SPR[cor];const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d'),gr=x.createRadialGradient(16,16,0,16,16,16);
+  gr.addColorStop(0,'#ffffff');gr.addColorStop(.18,cor);gr.addColorStop(.45,cor+'66');gr.addColorStop(1,cor+'00');x.fillStyle=gr;x.fillRect(0,0,32,32);return SPR[cor]=c;}
+function hex(cor){if(cor[0]==='#')return cor;const m=cor.match(/\d+/g);return '#'+m.slice(0,3).map(v=>(+v).toString(16).padStart(2,'0')).join('');}
+function desenhar(agora){
+  if(!W||!H)return;  /* janela ainda sem tamanho (aba escondida) */
+  const dt=Math.min(.1,(agora-ult)/1000); ult=agora;  /* se o PC atrasar, pula quadro em vez de ficar em câmera lenta */
+  g.setTransform(DPR,0,0,DPR,0,0);
+  if(!FUNDO){FUNDO=document.createElement('canvas');FUNDO.width=W;FUNDO.height=H;const f=FUNDO.getContext('2d'),gr=f.createRadialGradient(W*.2,0,0,W*.2,0,W*.9);gr.addColorStop(0,'#0f1c33');gr.addColorStop(1,'#04070d');f.fillStyle=gr;f.fillRect(0,0,W,H);}
+  g.globalAlpha=RASTRO?0.32:1; g.drawImage(FUNDO,0,0,W,H); g.globalAlpha=1;
+  if(!D)return;
+  const R=raio(), t=agora/1000;
+  g.globalCompositeOperation='lighter';
+  PART.forEach(p=>{const rota=ROTAS[p.r];if(!rota){Object.assign(p,nova());return;}
+    const e=ARESTAS[rota.e[p.k]];if(!e){Object.assign(p,nova());return;}
+    if(e.bloq){p.p+=dt*.18;if(p.p>.55){p.p=.55;p.vida-=dt*.8;}} else p.p+=dt*pxSeg(e)/compr(e);
+    if(p.vida<=0){Object.assign(p,nova(),{p:0});return;}
+    if(p.p>=1){p.p=0;p.k+=p.volta?-1:1;if(p.k<0||p.k>=rota.e.length){Object.assign(p,nova(),{p:0});}return;}
+    const tt=p.volta?1-p.p:p.p, [x,y0]=pt(curva(e),tt), y=y0+p.j*(1-Math.abs(tt-.5)*2);
+    const cor=hex(p.volta?'#b69bff':corTrecho(e)), r=(p.volta?1.4:(e.bloq?2.8:1.7+e.carga*2.4))*3.2;
+    g.globalAlpha=.85*Math.max(0,Math.min(1,p.vida)); g.drawImage(sprite(cor),x-r,y-r,r*2,r*2);});
+  g.globalAlpha=1; g.globalCompositeOperation='source-over';
+  g.setTransform(1,0,0,1,0,0); g.drawImage(estatico(),0,0); g.setTransform(DPR,0,0,DPR,0,0);
+  // só o que pulsa é desenhado a cada quadro
+  Object.values(NOS).forEach(n=>{if(n.x==null||!n.n)return;
+    if(n.sev===6){g.beginPath();g.arc(n.x,n.y,R*(1.4+.35*Math.sin(t*4)),0,Math.PI*2);g.fillStyle='rgba(255,77,106,.18)';g.fill();}
+    if(n.n.id===foco){g.beginPath();g.arc(n.x,n.y,R*1.7,0,Math.PI*2);g.strokeStyle='rgba(234,242,255,.8)';g.lineWidth=2;g.setLineDash([4,5]);g.lineDashOffset=-t*20;g.stroke();g.setLineDash([]);}
+  });
+  ONDAS=ONDAS.filter(o=>{const t=(agora-o.t)/1600;if(t>1)return false;if(t<0)return true;const n=NOS[o.id];if(!n)return false;g.beginPath();g.arc(n.x,n.y,R*(1+t*5),0,Math.PI*2);g.strokeStyle=o.cor;g.globalAlpha=1-t;g.lineWidth=3;g.stroke();g.globalAlpha=1;return true;});
+}
+function redimensionar(){FUNDO=null;EST=null;DPR=Math.min(1.25,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;if(D)layout();}
+addEventListener('resize',redimensionar);
+
+function topo(){
+  const xs=Object.values(NOS).filter(n=>n.sev>=0), fora=xs.filter(n=>n.sev===6).length, av=xs.filter(n=>n.sev>=3&&n.sev<6).length;
+  const t=$('titulo'); t.style.setProperty('--vc',fora?COR.bad:av?COR.warn:COR.ok);
+  t.innerHTML=fora?`<em>${fora} fora do ar</em>${av?` · ${av} em aviso`:''}`:av?`Nenhuma queda · <em>${av} em aviso</em>`:`<em>Tudo fluindo</em>`;
+  const idade=Math.round(Date.now()/1000-D.gerado), velho=idade>(D.intervalo||60)*3, el=$('coleta');
+  el.textContent=`PRTG · coleta há ${idade<90?idade+'s':Math.round(idade/60)+'min'}${velho?' · ⚠ dados atrasados':''}`; el.style.color=velho?COR.warn:'';
+}
+// ---- tour automático: um serviço por vez, sem ninguém clicar
+async function historico(sid){
+  if(window.SEM_HISTORICO) return null;
+  try{const z=n=>String(n).padStart(2,'0'), f=d=>`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}-${z(d.getHours())}-${z(d.getMinutes())}-${z(d.getSeconds())}`; /* o PRTG lê horário LOCAL */const fim=new Date(),ini=new Date(fim-6*3600e3);
+    const r=await fetch(`/prtg/api/historicdata.csv?id=${sid}&avg=600&sdate=${f(ini)}&edate=${f(fim)}`);if(!r.ok)return null;
+    const linhas=(await r.text()).trim().split(/\r?\n/), cab=linhas.shift().split('","').map(s=>s.replace(/"/g,''));
+    const col=cab.findIndex(c=>/^(Tempo de carregamento|Loading Time|Tráfego total|Traffic Total).*\(RAW\)$/i.test(c));if(col<0)return null;
+    return linhas.map(l=>parseFloat((l.split('","')[col]||'').replace(/"/g,'').replace(',','.'))).filter(v=>!isNaN(v));
+  }catch(e){return null;}
+}
+function spark(vals,cor){if(!vals||vals.length<3)return '';const mx=Math.max(...vals),mn=Math.min(...vals),w=100,h=30;
+  const p=vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-(v-mn)/((mx-mn)||1)*h*.9-1).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${p}" fill="none" stroke="${cor}" stroke-width="1.2" vector-effect="non-scaling-stroke"/><polygon points="0,${h} ${p} ${w},${h}" fill="${cor}" opacity=".12"/></svg>`;}
+/* Ocorrências: Aviso, Fora do ar, Fora (reconhecido), Parcial. "Incomum" (st 10) fica de fora: é só desvio estatístico.
+   Certificados/SSL viram uma linha só; as já registradas em config.conhecidos viram um resumo. */
+const ehSSL=x=>/ssl|certificad/i.test(x.nome);
+function filaAlertas(){
+  const conh=D.config.conhecidos||{}, devs=new Map(D.devices.map(d=>[d.id,d.nome]));
+  const todas=D.sensores.filter(x=>[4,5,13,14].includes(x.st));
+  const conhecidas=todas.filter(x=>conh[String(x.id)]), novas=todas.filter(x=>!conh[String(x.id)]);
+  const ssl=novas.filter(ehSSL), reais=novas.filter(x=>!ehSSL(x)).sort((a,b)=>sevSt(b.st)-sevSt(a.st));
+  const item=(cor,ic,quem,oque)=>`<li style="--c2:${cor}"><b class="ic">${ic}</b><span class="quem">${esc(quem)}</span><span class="oque">${esc(oque)}</span></li>`;
+  const li=reais.slice(0,16).map(x=>{const s=sevSt(x.st);return item(corSev(s),s===6?'✕':'▲',(devs.get(x.dev)||'').split(' (')[0],x.nome);});
+  if(ssl.length) li.push(item(COR.warn,'🔒',`SSL · ${ssl.length} aviso${ssl.length>1?'s':''}`,'certificados perto de vencer ou configuração fraca'));
+  if(conhecidas.length) li.push(item(COR.known,'⚑',`${conhecidas.length} já conhecida${conhecidas.length>1?'s':''}`,'registradas, aguardando a equipe'));
+  const chip=(n,txt,cor)=>n?` <span class="chip" style="color:${cor}">${n} ${txt}</span>`:'';
+  const tit=`<div class="t" style="--pc:${reais.length?COR.warn:COR.ok}"><span class="pul"></span>Ocorrências em aberto${chip(reais.length,reais.length>1?'novas':'nova',COR.warn)}${chip(ssl.length,'SSL',COR.muted||'#7f93b2')}${chip(conhecidas.length,conhecidas.length>1?'conhecidas':'conhecida',COR.known)}</div>`;
+  if(!li.length) return `<div class="fila">${tit}<div class="rolo"><ul><li style="--c2:${COR.ok}"><b class="ic">✓</b><span class="quem">nenhuma ocorrência no momento</span></li></ul></div></div>`;
+  const h=li.join(''), rola=li.length>3;  /* com poucas linhas, fica parada */
+  return `<div class="fila">${tit}<div class="rolo${rola?'':' parado'}"><ul style="--d:${Math.max(12,li.length*2.6)}s">${h}${rola?h:''}</ul></div></div>`;
+}
+let FILA_HTML='';
+function esqueleto(card){
+  card.innerHTML=`<div class="troca" id="cId"><div class="r" id="cR"></div><h2 id="cH"></h2><div class="st" id="cSt"></div></div><div id="cFila"></div><div class="num troca" id="cNum"></div><div class="troca" id="cGraf"></div>`;
+  card.classList.remove('saindo');}
+async function proximo(){
+  if(!D||!tour.length) return;
+  tourI=(tourI+1)%tour.length; const n=NOS[tour[tourI]]; foco=n.n.id;
+  const c=n.sev<0?COR.neutro:corSev(n.sev), card=$('cartao');
+  if(!$('cId')) esqueleto(card);
+  const sid=n.base?n.base.id:null, vals=sid?await historico(sid):null;
+  const partes=['cId','cNum','cGraf'].map($); partes.forEach(x=>x.classList.add('apaga'));  /* só o conteúdo pisca de leve; a barra fica parada */
+  setTimeout(()=>{
+    const ligs=ARESTAS.filter(e=>e.a===n.n.id||e.b===n.n.id).length;
+    card.style.setProperty('--c',c);
+    $('cR').textContent=`${tourI+1} de ${tour.length} · ${D.config.camadas[n.n.camada]||''}`;
+    $('cH').textContent=`${ICO[n.n.id]||''} ${n.n.rotulo}`;
+    $('cSt').textContent=txtSev(n.sev);
+    $('cNum').innerHTML=`${n.ms!=null?`<div><b>${Math.round(n.ms)}<small style="font-size:.45em"> ms</small></b><span>${n.viaPing?'ping':'tempo de resposta'}</span></div>`:''}${n.mb!=null?`<div><b>${Math.round(n.mb)}<small style="font-size:.45em"> Mbit/s</small></b><span>tráfego agora</span></div>`:''}<div><b>${ligs}</b><span>ligações</span></div>`;
+    $('cGraf').innerHTML=`${vals?spark(vals,c)+'<div class="msg">últimas 6 h</div>':''}<div class="msg">${esc(n.pior&&n.pior.msg&&n.pior.msg!=='OK'?n.pior.nome+' — '+n.pior.msg.split(/[—(]/)[0].trim():n.n.sub||'')}</div>`;
+    const f=filaAlertas(); if(f!==FILA_HTML){FILA_HTML=f;$('cFila').innerHTML=f;}  /* a lista só é refeita se mudou: a rolagem não reinicia */
+    partes.forEach(x=>x.classList.remove('apaga'));
+  },350);
+}
+let VERSAO=null;
+async function atualizar(){
+  try{const r=await fetch('/api/snapshot',{cache:'no-store'});
+    if(r.status===401){location.reload();return;}  /* login expirou: pede de novo em vez de ficar parado */
+    const j=await r.json();
+    if(!j.sensores) throw new Error(j.erro||'sem dados');
+    if(j.versao&&VERSAO&&j.versao!==VERSAO){location.reload();return;}  /* tela foi atualizada no servidor */
+    VERSAO=j.versao||VERSAO; D=j;montar();$('erro').style.display='none';}
+  catch(e){$('erro').style.display='block';$('erro').textContent='Sem contato com o servidor da topologia. Tentando de novo…';}
+}
+setInterval(()=>{const d=new Date();$('relogio').textContent=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});$('data').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});if(D)topo();},1000);
+redimensionar(); requestAnimationFrame(quadro);
+atualizar().then(proximo); setInterval(atualizar,20000); setInterval(proximo,9000);
+</script>
+<script>
+/* Playlist para TV: /fluxo?playlist  (ou ?playlist=fluxo,mosaico&t=120). Alterna sozinho entre as telas. */
+(function(){const q=new URLSearchParams(location.search);if(!q.has('playlist'))return;
+  const telas=(q.get('playlist')||'fluxo,mosaico').split(',').map(s=>s.trim()).filter(Boolean), t=Math.max(30,+q.get('t')||120);
+  const atual=location.pathname.replace('/','')||telas[0], prox=telas[(telas.indexOf(atual)+1)%telas.length];
+  const fim=Date.now()+t*1000, b=document.createElement('div');
+  b.style.cssText='position:fixed;left:50%;top:.6vh;transform:translateX(-50%);font:12px Consolas,monospace;color:#7f93b2;background:rgba(8,12,22,.85);border:1px solid #1c2a42;border-radius:99px;padding:2px 10px;z-index:9';
+  document.body.appendChild(b);
+  setInterval(()=>{const r=Math.max(0,Math.round((fim-Date.now())/1000));b.textContent=`▶ playlist: troca para ${prox} em ${Math.floor(r/60)}:${String(r%60).padStart(2,'0')} · para fixar, abra sem ?playlist`;},1000);
+  setTimeout(()=>{location.href=`/${prox}?${q.toString()}`;},t*1000);})();
+</script>
+</body>
+</html>

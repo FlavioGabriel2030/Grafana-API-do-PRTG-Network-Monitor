@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topologia viva NOC</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0b1119; --panel:#121a25; --panel2:#18222f; --line:#243244; --line2:#33465e; --ink:#e7eef6; --muted:#8b9db2; --faint:#5a6c82;
+  --ok:#2fbf71; --warn:#f0b429; --bad:#ef4f5f; --unusual:#f08a3c; --paused:#5b8def; --unknown:#7d8a99; --known:#c79a3a; --accent:#4fb3ff;
+  --sans:"IBM Plex Sans",system-ui,"Segoe UI",Roboto,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* topo */
+header{position:sticky;top:0;z-index:30;background:rgba(11,17,25,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:10px max(16px,2vw)}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand b{font-size:17px}
+.brand span{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.counts{display:flex;gap:6px;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.cnt{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font:500 13px var(--mono);cursor:pointer;white-space:nowrap}
+.cnt i{width:9px;height:9px;border-radius:50%}
+.cnt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font:11px var(--mono);padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+nav.tabs{display:flex;gap:2px;padding:0 max(16px,2vw);overflow-x:auto;scrollbar-width:none}
+nav.tabs button{background:none;border:0;color:var(--muted);font-weight:500;font-size:13px;padding:8px 14px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs .n{font:11px var(--mono);color:var(--faint);margin-left:4px}
+main{padding:16px max(16px,2vw) 48px}
+.telas{margin-left:auto;display:flex;gap:8px;align-items:center;font:12px var(--mono);color:var(--faint);white-space:nowrap;padding-left:12px}
+.telas a{color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--panel)}
+.telas a:hover{border-color:var(--accent)}
+.banner{border:1px solid var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--panel));padding:8px 12px;border-radius:6px;margin-bottom:12px}
+.banner.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--panel))}
+.sec[hidden]{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.card h2{margin:0 0 10px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card h2 small{font:11px var(--mono);text-transform:none;letter-spacing:0;color:var(--faint)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+
+/* mapa */
+#mapa{position:relative}
+#fios{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
+.camadas{position:relative;display:grid;grid-template-columns:repeat(var(--ncam,7),minmax(0,1fr));gap:22px;z-index:2}
+.camada{display:flex;flex-direction:column;gap:9px;justify-content:center;min-width:0}
+.ctit{font:10px var(--mono);color:var(--faint);text-transform:uppercase;letter-spacing:.14em;text-align:center}
+.nos{display:flex;flex-direction:column;gap:9px}
+.no{position:relative;display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--st,var(--unknown));border-radius:8px;padding:7px 10px 8px;cursor:pointer;transition:opacity .15s,transform .12s,border-color .12s,box-shadow .15s}
+.no:hover,.no.foco-alvo{border-color:var(--accent);transform:translateY(-1px)}
+.no b{display:block;font-size:13.5px;line-height:1.25}
+.no .s{display:block;font:11px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.no .v{display:block;font:500 12px var(--mono);margin-top:3px}
+.no .dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.no .dots i{width:7px;height:7px;border-radius:2px;background:var(--c)}
+.no .badge{position:absolute;top:-8px;right:-8px;min-width:19px;height:19px;border-radius:10px;background:var(--st);color:#0b1119;font:600 11px var(--mono);display:flex;align-items:center;justify-content:center;padding:0 5px}
+.no .flag{position:absolute;top:6px;right:8px;font:600 10px var(--mono);color:var(--known)}
+.no.fixo{border-style:dashed;border-left-style:solid;border-left-color:var(--faint);background:transparent}
+.no.alerta{box-shadow:0 0 0 1px var(--bad),0 0 16px -3px var(--bad);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 1px var(--bad),0 0 3px -3px var(--bad)}}
+.itens{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.it{display:flex;align-items:center;gap:6px;font:11px var(--mono);color:var(--muted)}
+.it i{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none}
+.it.prob{color:var(--ink)}
+.uso{display:block;height:5px;background:var(--line);border-radius:3px;margin-top:5px;overflow:hidden}
+.uso i{display:block;height:100%;background:var(--c)}
+.obs{position:relative;z-index:2;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:9px;margin-top:20px;padding-top:14px;border-top:1px dashed var(--line)}
+.fio{fill:none;stroke-width:1.6;transition:opacity .15s,stroke .15s}
+.fio.rede{stroke:var(--line2)}
+.fio.reserva,.fio.externo{stroke:var(--line2);stroke-dasharray:5 5}
+.fio.hipotese{stroke:var(--warn);stroke-dasharray:2 5}
+.fio.down{stroke:var(--bad);stroke-width:2.2}
+.fio.flow{stroke-dasharray:6 9;animation:flow 1.6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-15}}
+#mapa.focando .no:not(.foco){opacity:.22}
+#mapa.focando .fio:not(.hl){opacity:.08}
+.fio.hl{stroke:var(--accent);stroke-width:2.6}
+.fio.hl.down{stroke:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:22px;border-top:2px solid var(--line2)}
+@media (max-width:1279px){
+  .camadas{grid-template-columns:minmax(0,1fr);gap:18px}
+  .camada{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:start;gap:10px}
+  .ctit{text-align:left;padding-top:8px}
+  .nos{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:9px}
+}
+@media (max-width:600px){
+  .camada{grid-template-columns:minmax(0,1fr)}
+  .ctit{padding-top:0}
+  #fios{display:none}
+  .brand span{display:none}
+  header{position:static}
+}
+@media (prefers-reduced-motion:reduce){.fio.flow,.no.alerta{animation:none}}
+
+/* listas */
+.lst{display:flex;flex-direction:column;gap:6px;max-height:440px;overflow:auto}
+.row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:start;padding:7px 9px;border-radius:6px;background:var(--panel2);cursor:pointer;border:1px solid transparent;text-align:left;width:100%}
+.row:hover{border-color:var(--line2)}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:4px;background:var(--st)}
+.row .n{font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.row .d{font:11px var(--mono);color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .m{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.row .k{font-size:12px;color:var(--known)}
+.val{font:500 12px var(--mono);white-space:nowrap}
+.sub-h{font:11px var(--mono);color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin:10px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:12px var(--mono);background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--st,var(--accent));border-radius:5px;padding:4px 8px;cursor:pointer;color:var(--ink);text-decoration:none}
+.empty{color:var(--faint);font-size:13px;padding:6px}
+
+/* inventário */
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tools input,.tools select{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font:13px var(--sans)}
+.tools input{flex:1;min-width:min(100%,220px)}
+details.gr{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;background:var(--panel)}
+details.gr>summary{cursor:pointer;padding:9px 12px;display:flex;gap:10px;align-items:center;list-style:none}
+details.gr>summary::-webkit-details-marker{display:none}
+details.gr>summary::before{content:"▸";color:var(--faint);transition:transform .15s}
+details.gr[open]>summary::before{transform:rotate(90deg)}
+details.gr .path{color:var(--faint);font:11px var(--mono)}
+details.gr .gst{margin-left:auto;display:flex;gap:6px;font:11px var(--mono);color:var(--muted)}
+.devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:8px;padding:0 12px 12px}
+.dev{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--st);border-radius:7px;padding:7px 10px;cursor:pointer;min-width:0;text-align:left;width:100%}
+.dev:hover{border-color:var(--line2)}
+.dev b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dev .s{display:block;font:11px var(--mono);color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dev .ip{display:block;font:11px var(--mono);color:var(--known)}
+.bars{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-top:6px;background:var(--line)}
+.bars i{height:100%}
+
+/* conferência */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:11px var(--mono);color:var(--faint);text-transform:uppercase;letter-spacing:.08em;position:sticky;top:0;background:var(--panel)}
+td.mono{font-family:var(--mono)}
+.tag{display:inline-block;font:11px var(--mono);padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+.tag.bad{color:var(--bad);border-color:var(--bad)}.tag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 50%,transparent)}
+.resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--panel2);border-radius:8px;padding:10px 12px}
+.kpi b{display:block;font:600 22px var(--mono)}
+.kpi span{font-size:12px;color:var(--muted)}
+
+/* gaveta */
+#gaveta{position:fixed;top:0;right:0;bottom:0;width:min(540px,100vw);background:var(--panel);border-left:1px solid var(--line);z-index:50;transform:translateX(102%);transition:transform .2s;display:flex;flex-direction:column;box-shadow:-20px 0 40px rgba(0,0,0,.35)}
+#gaveta.on{transform:none}
+#gaveta .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start}
+#gaveta .hd h3{margin:0;font-size:17px}
+#gaveta .hd .s{font:12px var(--mono);color:var(--muted);margin-top:2px;word-break:break-word}
+#gaveta .bd{padding:12px 16px 24px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+#gX{margin-left:auto;background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+.nota{background:color-mix(in srgb,var(--accent) 10%,var(--panel2));border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px;font-size:13px}
+.sn{background:var(--panel2);border-left:3px solid var(--st);border-radius:6px;padding:8px 10px}
+.sn .top{display:flex;gap:8px;justify-content:space-between}
+.sn .msg{font-size:12px;color:var(--muted);margin-top:3px;word-break:break-word}
+.sn .k{font-size:12px;color:var(--known);margin-top:3px}
+.sn a{font:11px var(--mono)}
+iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line);border-radius:10px;background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand"><b>Topologia viva · NOC</b><span>PRTG ao vivo · phpIPAM · Grafana</span></div>
+    <div class="counts" id="counts" role="group" aria-label="Sensores por status"></div>
+    <div class="right">
+      <span class="pill" id="pPrtg">PRTG…</span>
+      <span class="pill" id="pGraf">Grafana…</span>
+      <span class="pill" id="pAt">—</span>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-t="mapa" aria-selected="true">Caminho do usuário</button>
+    <button role="tab" data-t="prob" aria-selected="false">Problemas <span class="n" id="tNprob"></span></button>
+    <button role="tab" data-t="inv" aria-selected="false">Inventário <span class="n" id="tNinv"></span></button>
+    <button role="tab" data-t="conf" aria-selected="false">Conferência <span class="n" id="tNconf"></span></button>
+    <button role="tab" data-t="ach" aria-selected="false">Achados</button>
+    <span class="telas">Telas da TV:
+      <a href="/fluxo" target="_blank" rel="noopener">🌊 Fluxo</a>
+      <a href="/mosaico" target="_blank" rel="noopener">⬢ Mosaico</a>
+      <a href="/fluxo?playlist" target="_blank" rel="noopener" title="Alterna Fluxo e Mosaico a cada 2 min">▶ Playlist</a>
+    </span>
+  </nav>
+</header>
+
+<main>
+  <div id="banner"></div>
+
+  <section class="sec" id="sec-mapa">
+    <div class="stack">
+      <div class="card">
+        <h2>Caminho do usuário até os serviços <small>passe o mouse ou toque para ver o caminho · clique para detalhes · Esc limpa</small></h2>
+        <div id="mapa"><svg id="fios" aria-hidden="true"></svg><div class="camadas" id="camadas"></div><div class="obs" id="obs"></div></div>
+        <div class="legend">
+          <span><i></i>rede (segue o DNS interno)</span>
+          <span><i style="border-top-style:dashed"></i>reserva / externo</span>
+          <span><i style="border-color:var(--warn);border-top-style:dotted"></i>hipótese</span>
+          <span><i style="border-color:var(--bad)"></i>origem fora do ar</span>
+          <span><b style="color:var(--known);font:600 11px var(--mono)">⚑</b> problema já registrado</span>
+          <span>borda colorida = pior status · número = problemas novos</span>
+        </div>
+      </div>
+      <div class="trio">
+        <div class="card"><h2>Problemas novos <small id="nNovos"></small></h2><div class="lst" id="novos"></div></div>
+        <div class="card"><h2>Links e tráfego <small>agora</small></h2><div class="lst" id="trafego"></div></div>
+        <div class="card"><h2>Certificados que vencem primeiro <small>dias</small></h2><div class="lst" id="certs"></div></div>
+      </div>
+      <div class="trio">
+        <div class="card"><h2>Robôs sentinela <small>testam o conteúdo da página</small></h2><div class="chips" id="robos"></div></div>
+        <div class="card"><h2>Grafana <small>histórico e tendências</small></h2><div class="chips" id="graf"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-prob" hidden>
+    <div class="trio">
+      <div class="card"><h2>Novos <small>precisam de ação</small></h2><div class="lst" id="pNovos" style="max-height:none"></div></div>
+      <div class="card"><h2>Já registrados <small>pendentes com alguma equipe</small></h2><div class="lst" id="pConh" style="max-height:none"></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-inv" hidden>
+    <div class="card">
+      <div class="tools">
+        <input id="busca" type="search" placeholder="Buscar device, IP, sensor, tag ou nome no phpIPAM…" aria-label="Buscar">
+        <select id="fSt" aria-label="Filtro"><option value="">Todos</option><option value="prob">Só com problema</option><option value="pausado">Só pausados</option><option value="diverge">Nome diferente do phpIPAM</option></select>
+        <button class="chip" id="abrirTodos" type="button">Abrir todos</button>
+      </div>
+      <div id="inv"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-conf" hidden>
+    <div class="card">
+      <h2>Conferência com o PRTG e o phpIPAM <small>refeita a cada coleta</small></h2>
+      <div class="resumo" id="cResumo"></div>
+      <div class="sub-h">Sensores usados no mapa</div>
+      <div class="tbl"><table id="cMapa"></table></div>
+      <div class="sub-h">Devices com nome diferente no phpIPAM</div>
+      <div class="tbl"><table id="cIpam"></table></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-ach" hidden><iframe class="achados" data-src="/achados" title="Achados e glossário"></iframe></section>
+</main>
+
+<aside id="gaveta" aria-hidden="true"><div class="hd"><div><h3 id="gT"></h3><div class="s" id="gS"></div></div><button id="gX" type="button">Fechar</button></div><div class="bd" id="gB"></div></aside>
+
+<script>
+'use strict';
+const ST={3:['OK','--ok',1],4:['Aviso','--warn',4],5:['Fora','--bad',6],14:['Fora parcial','--bad',6],13:['Fora (reconhecido)','--bad',5],10:['Incomum','--unusual',3],1:['Desconhecido','--unknown',2],2:['Coletando','--unknown',2],6:['Nenhum','--unknown',0],7:['Pausado','--paused',0],8:['Pausado','--paused',0],9:['Pausado','--paused',0],11:['Pausado','--paused',0],12:['Pausado','--paused',0]};
+const st=c=>ST[c]||['?','--unknown',2];
+const cor=c=>`var(${st(c)[1]})`;
+const pausado=c=>[7,8,9,11,12].includes(c);
+const problema=c=>[4,5,10,13,14].includes(c);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const $=id=>document.getElementById(id);
+let D=null, I={}, filtroSt=null, selecionado=null, aba='mapa';
+
+// ---------- dados
+function indexar(){
+  I.sens=new Map(D.sensores.map(s=>[s.id,s]));
+  I.dev=new Map(D.devices.map(d=>[d.id,d]));
+  I.grp=new Map(D.grupos.map(g=>[g.id,g]));
+  I.porDev=new Map(); D.sensores.forEach(s=>{if(!I.porDev.has(s.dev))I.porDev.set(s.dev,[]);I.porDev.get(s.dev).push(s);});
+  I.filhos=new Map(); D.grupos.forEach(g=>{if(!I.filhos.has(g.pai))I.filhos.set(g.pai,[]);I.filhos.get(g.pai).push(g);});
+  I.conh=D.config.conhecidos||{};
+  I.nos=new Map([...(D.config.nos||[]),...(D.config.observadores||[])].map(n=>[n.id,n]));
+}
+const conhecido=s=>problema(s.st)&&I.conh[String(s.id)];
+const novo=s=>problema(s.st)&&!I.conh[String(s.id)];
+function pior(lista){
+  const ativos=lista.filter(s=>!pausado(s.st)&&!conhecido(s));
+  if(!lista.length) return 1;
+  if(!ativos.length) return lista.some(conhecido)?4:7;
+  return ativos.reduce((a,s)=>st(s.st)[2]>st(a)[2]?s.st:a,3);
+}
+function caminho(gid){const p=[];let g=I.grp.get(gid),n=0;while(g&&g.id!==0&&n++<20){p.unshift(g.nome);g=I.grp.get(g.pai);}return p;}
+function devsDoGrupo(gid){const r=[];const desce=(g,n)=>{if(n>20)return;D.devices.forEach(d=>{if(d.pai===g)r.push(d);});(I.filhos.get(g)||[]).forEach(x=>desce(x.id,n+1));};desce(gid,0);return r;}
+function sensoresDoNo(n){
+  const ids=[...(n.sensores||[]),...(n.itens||[]).flatMap(i=>i.sensores||[])];
+  const r=[...new Set(ids)].map(i=>I.sens.get(i)).filter(Boolean);
+  if(n.grupoNome){D.grupos.filter(g=>g.nome===n.grupoNome).forEach(g=>devsDoGrupo(g.id).forEach(d=>(I.porDev.get(d.id)||[]).forEach(s=>{if(!r.includes(s))r.push(s);})));}
+  return r;
+}
+function mbit(v){const m=String(v||'').match(/([\d.,]+)\s*([kMG])bit/i);if(!m)return null;const x=parseFloat(m[1].replace(/\./g,'').replace(',','.'));return x*({k:.001,M:1,G:1000}[m[2]]||1);}
+const grafanaBase=()=>D.grafanaPublico||`${location.protocol}//${location.hostname}:3000`;
+const devNome=id=>(I.dev.get(id)||{}).nome||'';
+
+// ---------- mapa
+function cartao(n){
+  const el=document.createElement('button'); el.type='button'; el.className='no'; el.id='no-'+n.id; el.dataset.id=n.id;
+  let status=null, linhas='';
+  if(n.especial==='grafana'){status=D.grafanaOk?3:5; linhas=`<span class="v">${D.grafanaOk?'no ar':'fora do ar'}</span>`;}
+  else if(!n.fixo){
+    const ss=sensoresDoNo(n); status=pior(ss);
+    const nNovo=ss.filter(novo).length, nConh=ss.filter(conhecido).length;
+    const base=n.valorDe?I.sens.get(n.valorDe):(n.capacidadeMbit||n.mostrarValor)?ss[0]:null;
+    if(base) linhas+=`<span class="v">${esc(base.val)}</span>`;
+    if(n.capacidadeMbit&&base){const m=mbit(base.val);if(m!=null){const p=Math.min(100,m/n.capacidadeMbit*100);linhas+=`<span class="uso" title="tráfego total (entrada+saída): ${p.toFixed(0)}% de ${n.capacidadeMbit} Mbit/s"><i style="width:${p}%;--c:var(${p>80?'--bad':p>60?'--warn':'--ok'})"></i></span>`;}}
+    if(n.grupoNome&&!n.sensores) linhas+=`<span class="v">${new Set(ss.map(s=>s.dev)).size} devices · ${ss.length} sensores</span>`;
+    if(n.itens) linhas+=`<span class="itens">${n.itens.map(it=>{const xs=(it.sensores||[]).map(i=>I.sens.get(i)).filter(Boolean);const p=pior(xs);const k=xs.some(conhecido);return `<span class="it${problema(p)?' prob':''}" style="--c:${cor(p)}"><i></i>${esc(it.rotulo)}${k?' <b style="color:var(--known)">⚑</b>':''}</span>`;}).join('')}</span>`;
+    else if(ss.length&&ss.length<=12) linhas+=`<span class="dots">${ss.map(s=>`<i style="--c:${conhecido(s)?'var(--known)':cor(s.st)}" title="${esc(s.nome)}: ${esc(st(s.st)[0])}"></i>`).join('')}</span>`;
+    if(nNovo) linhas+=`<span class="badge">${nNovo}</span>`;
+    if(nConh) linhas+=`<span class="flag" title="${nConh} problema(s) já registrado(s)">⚑${nConh}</span>`;
+  }
+  if(n.fixo) el.classList.add('fixo'); else el.style.setProperty('--st',cor(status));
+  if([5,14].includes(status)) el.classList.add('alerta');
+  el.dataset.st=status??'';
+  el.setAttribute('aria-label',`${n.rotulo}: ${n.fixo?'referência':st(status)[0]}`);
+  el.innerHTML=`<b>${esc(n.rotulo)}</b><span class="s" title="${esc(n.sub)}">${esc(n.sub||'')}</span>${linhas}`;
+  el.addEventListener('mouseenter',()=>focar(n.id));
+  el.addEventListener('mouseleave',()=>focar(selecionado));
+  el.addEventListener('focus',()=>focar(n.id));
+  el.addEventListener('click',()=>{selecionado=n.id;focar(n.id);abrirNo(n);});
+  return el;
+}
+function desenharMapa(){
+  const C=D.config, cam=$('camadas'), obs=$('obs');
+  cam.style.setProperty('--ncam',C.camadas.length);
+  cam.replaceChildren(...C.camadas.map((nome,i)=>{
+    const c=document.createElement('div'); c.className='camada';
+    const t=document.createElement('div'); t.className='ctit'; t.textContent=nome;
+    const l=document.createElement('div'); l.className='nos';
+    C.nos.filter(n=>n.camada===i).forEach(n=>l.appendChild(seguro(()=>cartao(n),n.rotulo)));
+    c.append(t,l); return c;
+  }));
+  obs.replaceChildren(...(C.observadores||[]).map(n=>seguro(()=>cartao(n),n.rotulo)));
+  requestAnimationFrame(()=>{desenharFios();focar(selecionado);});
+}
+function seguro(fn,nome){try{return fn();}catch(e){console.error(nome,e);const d=document.createElement('div');d.className='no';d.textContent=`${nome}: erro ao montar`;return d;}}
+function desenharFios(){
+  if(!D) return;
+  const svg=$('fios'), base=$('mapa').getBoundingClientRect();
+  svg.setAttribute('viewBox',`0 0 ${base.width} ${base.height}`);
+  const frag=document.createDocumentFragment();
+  (D.config.ligacoes||[]).forEach(([a,b,tipo])=>{
+    const A=$('no-'+a), B=$('no-'+b); if(!A||!B) return;
+    const ra=A.getBoundingClientRect(), rb=B.getBoundingClientRect(); if(!ra.width||!rb.width) return;
+    let d;
+    if(rb.left>=ra.right-4){const x1=ra.right-base.left,y1=ra.top+ra.height/2-base.top,x2=rb.left-base.left,y2=rb.top+rb.height/2-base.top,dx=Math.max(24,(x2-x1)/2);d=`M${x1} ${y1} C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`;}
+    else if(rb.top>=ra.bottom-4){const x1=ra.left+ra.width/2-base.left,y1=ra.bottom-base.top,x2=rb.left+rb.width/2-base.left,y2=rb.top-base.top,dy=Math.max(18,(y2-y1)/2);d=`M${x1} ${y1} C${x1} ${y1+dy} ${x2} ${y2-dy} ${x2} ${y2}`;}
+    else return;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    const sa=+A.dataset.st, down=[5,13,14].includes(sa);
+    p.setAttribute('d',d);
+    p.setAttribute('class',`fio ${tipo}${down?' down':''}${!down&&tipo==='rede'&&sa===3?' flow':''}`);
+    p.dataset.a=a; p.dataset.b=b; frag.appendChild(p);
+  });
+  svg.replaceChildren(frag);
+}
+function vizinhanca(id){
+  const L=D.config.ligacoes||[], up=new Set([id]), down=new Set([id]);
+  for(let mud=true;mud;){mud=false;for(const [a,b] of L){if(down.has(a)&&!down.has(b)){down.add(b);mud=true;}if(up.has(b)&&!up.has(a)){up.add(a);mud=true;}}}
+  return {up,down};
+}
+function focar(id){
+  const m=$('mapa'); if(!m||!D) return;
+  document.querySelectorAll('.no.foco,.no.foco-alvo').forEach(e=>e.classList.remove('foco','foco-alvo'));
+  document.querySelectorAll('#fios .hl').forEach(e=>e.classList.remove('hl'));
+  if(!id||!$('no-'+id)){m.classList.remove('focando');return;}
+  const {up,down}=vizinhanca(id), todos=new Set([...up,...down]);
+  todos.forEach(n=>$('no-'+n)?.classList.add('foco'));
+  $('no-'+id).classList.add('foco-alvo');
+  document.querySelectorAll('#fios path').forEach(p=>{const a=p.dataset.a,b=p.dataset.b;if((down.has(a)&&down.has(b))||(up.has(a)&&up.has(b)))p.classList.add('hl');});
+  m.classList.add('focando');
+}
+
+// ---------- listas
+function linha(s,{motivo=true}={}){
+  const d=I.dev.get(s.dev), k=I.conh[String(s.id)];
+  return `<button type="button" class="row" style="--st:${k&&problema(s.st)?'var(--known)':cor(s.st)}" data-dev="${s.dev}"><span class="dot"></span><span style="min-width:0"><span class="n" style="display:block">${esc(s.nome)}</span><span class="d" style="display:block">${esc(d?d.nome:'')}</span>${problema(s.st)&&s.msg&&s.msg!=='OK'?`<span class="m">${esc(s.msg)}</span>`:''}${motivo&&k&&problema(s.st)?`<span class="k" style="display:block">⚑ ${esc(k)}</span>`:''}</span><span class="val">${esc(s.val||'')}</span></button>`;
+}
+function ligar(el){el.querySelectorAll('[data-dev]').forEach(r=>r.addEventListener('click',()=>abrirDevice(+r.dataset.dev)));el.querySelectorAll('[data-no]').forEach(r=>r.addEventListener('click',()=>{const n=I.nos.get(r.dataset.no);if(n){selecionado=n.id;abrirAba('mapa');focar(n.id);abrirNo(n);}}));}
+const ordemProb=(a,b)=>st(b.st)[2]-st(a.st)[2]||b.pri-a.pri||a.nome.localeCompare(b.nome);
+function paineis(){
+  // contadores
+  const c={OK:0,Aviso:0,Fora:0,Incomum:0,Pausado:0}, cmap={OK:'--ok',Aviso:'--warn',Fora:'--bad',Incomum:'--unusual',Pausado:'--paused'};
+  D.sensores.forEach(s=>{const n=st(s.st)[0];if(n.startsWith('Fora'))c.Fora++;else if(n in c)c[n]++;});
+  $('counts').innerHTML=Object.entries(c).map(([k,v])=>`<button type="button" class="cnt" data-k="${k}" aria-pressed="${filtroSt===k}" title="Filtrar o inventário"><i style="background:var(${cmap[k]})"></i>${v.toLocaleString('pt-BR')} ${k}</button>`).join('');
+  $('counts').querySelectorAll('.cnt').forEach(e=>e.addEventListener('click',()=>{filtroSt=filtroSt===e.dataset.k?null:e.dataset.k;paineis();abrirAba('inv');}));
+  // problemas
+  const novos=D.sensores.filter(novo).sort(ordemProb), conh=D.sensores.filter(conhecido).sort(ordemProb);
+  $('nNovos').textContent=`${novos.length} novos · ${conh.length} já registrados`;
+  $('tNprob').textContent=novos.length;
+  $('novos').innerHTML=novos.length?novos.map(s=>linha(s)).join(''):'<div class="empty">Nenhum problema novo.</div>';
+  $('pNovos').innerHTML=$('novos').innerHTML;
+  $('pConh').innerHTML=conh.length?conh.map(s=>linha(s)).join(''):'<div class="empty">Nada registrado.</div>';
+  ['novos','pNovos','pConh'].forEach(i=>ligar($(i)));
+  // links e tráfego
+  const nosLink=(D.config.nos||[]).filter(n=>n.capacidadeMbit||/link/i.test(n.id));
+  const idsLink=new Set(nosLink.flatMap(n=>n.sensores||[]));
+  const outros=D.sensores.filter(s=>/Traffic|Tr[aá]fego/i.test(s.nome)&&!pausado(s.st)&&!idsLink.has(s.id)&&mbit(s.val)!=null).sort((a,b)=>mbit(b.val)-mbit(a.val)).slice(0,5);
+  $('trafego').innerHTML=[...[...idsLink].map(i=>I.sens.get(i)).filter(Boolean),...outros].map(s=>linha(s)).join('')||'<div class="empty">Sem dados.</div>';
+  ligar($('trafego'));
+  // certificados
+  const ce=D.sensores.filter(s=>s.tipo==='sslcertificate'&&!pausado(s.st)&&typeof s.raw==='number').sort((a,b)=>a.raw-b.raw).slice(0,8);
+  $('certs').innerHTML=ce.map(s=>{const k=s.raw<7?'--bad':s.raw<30?'--warn':'--ok';const d=I.dev.get(s.dev);return `<button type="button" class="row" style="--st:var(${k})" data-dev="${s.dev}"><span class="dot"></span><span style="min-width:0"><span class="n" style="display:block">${esc(d?d.nome:s.nome)}</span><span class="d" style="display:block">${esc(d?d.ip||d.host:'')}</span></span><span class="val">${s.raw<0?'vencido':Math.round(s.raw)+' d'}</span></button>`;}).join('')||'<div class="empty">Sem dados.</div>';
+  ligar($('certs'));
+  // robôs
+  const rb=D.sensores.filter(s=>/robosentinela/.test(s.tags||''));
+  $('robos').innerHTML=rb.map(s=>`<button type="button" class="chip" style="--st:${cor(s.st)}" data-dev="${s.dev}">${esc(devNome(s.dev).split(' (')[0])} · ${esc(s.nome.replace(/^Rob\S*\s+cidad\S*:\s*/i,''))} · ${esc(s.val)}</button>`).join('')||'<div class="empty">Nenhum robô.</div>';
+  ligar($('robos'));
+  $('graf').innerHTML=(D.config.grafana||[]).map(g=>`<a class="chip" href="${esc(grafanaBase()+g.caminho)}" target="_blank" rel="noopener">${esc(g.nome)} ↗</a>`).join('');
+  // topo
+  const idade=Date.now()/1000-D.gerado, atrasado=idade>D.intervalo*3;
+  const pP=$('pPrtg'); pP.className='pill '+(D.erro?'bad':atrasado?'warn':'ok'); pP.textContent=D.erro?'PRTG: falha':atrasado?'PRTG: dados atrasados':'PRTG conectado';
+  const pG=$('pGraf'); pG.className='pill '+(D.grafanaOk?'ok':'bad'); pG.textContent=D.grafanaOk?'Grafana no ar':'Grafana fora';
+  const msgs=[]; if(D.erro)msgs.push(`<div class="banner">${esc(D.erro)}</div>`); if(atrasado&&!D.erro)msgs.push(`<div class="banner warn">Os dados têm ${Math.round(idade/60)} min. O servidor pode ter perdido o acesso ao PRTG.</div>`);
+  $('banner').innerHTML=msgs.join('');
+}
+
+// ---------- inventário
+function inventario(){
+  const q=$('busca').value.trim().toLowerCase(), f=$('fSt').value;
+  const alvo={OK:[3],Aviso:[4],Fora:[5,13,14],Incomum:[10],Pausado:[7,8,9,11,12]}[filtroSt];
+  const porGrupo=new Map(); let total=0;
+  D.devices.forEach(d=>{
+    const ss=I.porDev.get(d.id)||[], ag=pior(ss);
+    if(f==='prob'&&!ss.some(s=>problema(s.st)))return;
+    if(f==='pausado'&&!pausado(ag))return;
+    if(f==='diverge'&&!d.diverge)return;
+    if(alvo&&!ss.some(s=>alvo.includes(s.st)))return;
+    if(q&&![d.nome,d.host,d.ip,d.tags,d.ipam?.nome,d.ipam?.desc,...ss.map(s=>s.nome+' '+s.tags)].join(' ').toLowerCase().includes(q))return;
+    if(!porGrupo.has(d.pai))porGrupo.set(d.pai,[]); porGrupo.get(d.pai).push([d,ss,ag]); total++;
+  });
+  // ordem da árvore do PRTG
+  const ordem=[]; const visita=(gid,n)=>{if(n>20)return;if(porGrupo.has(gid))ordem.push(gid);(I.filhos.get(gid)||[]).slice().sort((a,b)=>a.pos-b.pos).forEach(g=>visita(g.id,n+1));};
+  visita(0,0); porGrupo.forEach((_,g)=>{if(!ordem.includes(g))ordem.push(g);});
+  const abrir=!!(q||f||filtroSt);
+  $('tNinv').textContent=D.devices.length;
+  $('inv').innerHTML=ordem.map(g=>{
+    const p=caminho(g), lista=porGrupo.get(g).sort((a,b)=>a[0].pos-b[0].pos);
+    const np=lista.filter(x=>x[1].some(novo)).length;
+    return `<details class="gr"${abrir||np?' open':''}><summary><b>${esc(p[p.length-1]||'Raiz')}</b><span class="path">${esc(p.slice(0,-1).join(' / '))}</span><span class="gst">${lista.length} devices${np?` · <span style="color:var(--bad)">${np} com problema</span>`:''}</span></summary><div class="devs">${lista.map(([d,ss,ag])=>{
+      const n={};ss.forEach(s=>{const k=conhecido(s)?'--known':st(s.st)[1];n[k]=(n[k]||0)+1;});
+      const bars=Object.entries(n).map(([k,v])=>`<i style="width:${v/ss.length*100}%;background:var(${k})"></i>`).join('');
+      return `<button type="button" class="dev" style="--st:${cor(ag)}" data-dev="${d.id}"><b title="${esc(d.nome)}">${esc(d.nome)}</b><span class="s">${esc(d.ip||d.host)} · ${ss.length} sensores</span>${d.diverge?`<span class="ip">≠ phpIPAM: ${esc(d.ipam.nome)}</span>`:''}<span class="bars">${bars}</span></button>`;}).join('')}</div></details>`;
+  }).join('')||'<div class="empty">Nada encontrado.</div>';
+  ligar($('inv'));
+}
+
+// ---------- conferência
+function conferencia(){
+  const c=D.conferencia||[], falt=c.filter(x=>!x.existe), div=D.devices.filter(d=>d.diverge), semIpam=D.devices.filter(d=>d.ip&&!d.ipam).length;
+  $('tNconf').textContent=falt.length+div.length||'';
+  $('cResumo').innerHTML=[[c.length,'sensores do mapa conferidos'],[falt.length,'não existem mais no PRTG'],[div.length,'devices com nome diferente no phpIPAM'],[D.ipamTotal,'IPs de servidor no phpIPAM']].map(([v,t])=>`<div class="kpi"><b>${v}</b><span>${esc(t)}</span></div>`).join('');
+  $('cMapa').innerHTML='<thead><tr><th>Caixa</th><th>Sensor</th><th>Device no PRTG</th><th>IP</th><th>phpIPAM</th><th>Status</th></tr></thead><tbody>'+c.map(x=>`<tr><td><button type="button" class="chip" data-no="${esc(x.no)}">${esc(x.rotulo)}</button></td><td class="mono">${x.sensor??''} ${esc(x.nome)}</td><td>${esc(x.device)}</td><td class="mono">${esc(x.ip)}</td><td class="mono">${esc(x.ipam)}</td><td>${x.existe?`<span class="tag" style="color:${cor(x.st)}">${esc(st(x.st)[0])}</span>`:'<span class="tag bad">não existe</span>'}</td></tr>`).join('')+'</tbody>';
+  $('cIpam').innerHTML='<thead><tr><th>IP</th><th>PRTG</th><th>phpIPAM</th><th>Descrição no phpIPAM</th></tr></thead><tbody>'+(div.map(d=>`<tr><td class="mono">${esc(d.ip)}</td><td><button type="button" class="chip" data-dev="${d.id}">${esc(d.nome)}</button></td><td class="mono">${esc(d.ipam.nome)}</td><td>${esc(d.ipam.desc)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nenhuma divergência.</td></tr>')+'</tbody>';
+  ligar($('sec-conf'));
+}
+
+// ---------- gaveta
+function gaveta(t,s,html){$('gT').textContent=t;$('gS').innerHTML=s;$('gB').innerHTML=html;const g=$('gaveta');g.classList.add('on');g.setAttribute('aria-hidden','false');ligar($('gB'));$('gX').focus({preventScroll:true});}
+function fecharGaveta(){const g=$('gaveta');g.classList.remove('on');g.setAttribute('aria-hidden','true');selecionado=null;focar(null);}
+function cartaoSensor(s){const k=I.conh[String(s.id)];return `<div class="sn" style="--st:${k&&problema(s.st)?'var(--known)':cor(s.st)}"><div class="top"><b>${esc(s.nome)}</b><span class="val">${esc(s.val||'')}</span></div><div class="msg">${esc(st(s.st)[0])}${s.msg&&s.msg!=='OK'?' · '+esc(s.msg):''}</div>${k&&problema(s.st)?`<div class="k">⚑ ${esc(k)}</div>`:''}<a href="${esc(D.prtg)}/sensor.htm?id=${s.id}" target="_blank" rel="noopener">abrir no PRTG ↗ (${s.id}) · ${esc(devNome(s.dev))}</a></div>`;}
+function abrirDevice(id){
+  const d=I.dev.get(id); if(!d) return;
+  const ss=(I.porDev.get(id)||[]).slice().sort(ordemProb);
+  const ip=d.ipam?`<div class="nota">phpIPAM: <b>${esc(d.ipam.nome)}</b>${d.ipam.desc?` · ${esc(d.ipam.desc)}`:''} · ${esc(d.ipam.rede)}${d.diverge?'<br>⚠ O nome no PRTG é diferente do phpIPAM: confirmar qual está certo.':''}</div>`:(d.ip?'<div class="nota">Este IP não está nas sub-redes de servidores exportadas do phpIPAM.</div>':'');
+  gaveta(d.nome,`${esc(d.ip||'?')} · ${esc(d.host)} · ${esc(caminho(d.pai).join(' / '))} · <a href="${esc(D.prtg)}/device.htm?id=${d.id}" target="_blank" rel="noopener">device ${d.id} ↗</a>`,ip+(ss.map(cartaoSensor).join('')||'<div class="empty">Sem sensores.</div>'));
+}
+function abrirNo(n){
+  const L=D.config.ligacoes||[];
+  const lig=L.filter(l=>l[0]===n.id||l[1]===n.id).map(([a,b,t])=>{const o=a===n.id?b:a,on=I.nos.get(o);return on?`<button type="button" class="chip" data-no="${esc(o)}">${a===n.id?'→':'←'} ${esc(on.rotulo)}${t!=='rede'?` (${esc(t)})`:''}</button>`:'';}).join('');
+  let corpo=(n.nota?`<div class="nota">${esc(n.nota)}</div>`:'')+(lig?`<div class="sub-h">Ligações</div><div class="chips">${lig}</div>`:'');
+  if(n.fixo){gaveta(n.rotulo,esc(n.sub),corpo+'<div class="empty">Item de referência: não é medido pelo PRTG.</div>');return;}
+  if(n.especial==='grafana'){gaveta('Grafana',esc(grafanaBase()),corpo+`<div class="chips">${(D.config.grafana||[]).map(g=>`<a class="chip" href="${esc(grafanaBase()+g.caminho)}" target="_blank" rel="noopener">${esc(g.nome)} ↗</a>`).join('')}</div>`);return;}
+  const ss=sensoresDoNo(n);
+  if(n.itens) corpo+=n.itens.map(it=>{const xs=(it.sensores||[]).map(i=>I.sens.get(i)).filter(Boolean);return `<div class="sub-h">${esc(it.rotulo)}</div>`+xs.sort(ordemProb).map(cartaoSensor).join('');}).join('');
+  else if(n.grupoNome&&!n.sensores){const devs=[...new Set(ss.map(s=>s.dev))].map(i=>I.dev.get(i)).filter(Boolean);corpo+=`<div class="sub-h">${devs.length} devices do grupo "${esc(n.grupoNome)}"</div>`+devs.map(d=>{const xs=I.porDev.get(d.id)||[];return `<button type="button" class="row" style="--st:${cor(pior(xs))}" data-dev="${d.id}"><span class="dot"></span><span style="min-width:0"><span class="n" style="display:block">${esc(d.nome)}</span><span class="d" style="display:block">${esc(d.ip||d.host)} · ${xs.filter(novo).length} problemas novos</span></span><span></span></button>`;}).join('');}
+  else corpo+=ss.slice().sort(ordemProb).map(cartaoSensor).join('');
+  const devs=[...new Set((n.sensores||[]).map(i=>I.sens.get(i)?.dev).filter(Boolean))];
+  if(devs.length) corpo+=`<div class="sub-h">Devices</div><div class="chips">${devs.map(i=>`<button type="button" class="chip" data-dev="${i}">${esc(devNome(i))}</button>`).join('')}</div>`;
+  gaveta(n.rotulo,`${esc(n.sub||'')} · ${esc(st(pior(ss))[0])}`,corpo);
+}
+$('gX').addEventListener('click',fecharGaveta);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')fecharGaveta();});
+$('mapa').addEventListener('click',e=>{if(!e.target.closest('.no'))fecharGaveta();});
+
+// ---------- abas e ciclo
+function abrirAba(t){
+  aba=t;
+  document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));
+  document.querySelectorAll('.sec').forEach(s=>s.hidden=s.id!=='sec-'+t);
+  if(t==='ach'){const f=document.querySelector('iframe.achados');if(!f.src)f.src=f.dataset.src;}
+  if(D){if(t==='mapa')requestAnimationFrame(()=>{desenharFios();focar(selecionado);});if(t==='inv')inventario();if(t==='conf')conferencia();}
+  try{localStorage.setItem('topo-aba',t);}catch(e){}
+}
+document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>abrirAba(b.dataset.t)));
+let tBusca; $('busca').addEventListener('input',()=>{clearTimeout(tBusca);tBusca=setTimeout(inventario,150);});
+$('fSt').addEventListener('change',inventario);
+$('abrirTodos').addEventListener('click',()=>document.querySelectorAll('details.gr').forEach(d=>d.open=true));
+new ResizeObserver(()=>requestAnimationFrame(desenharFios)).observe($('mapa'));
+
+function render(){
+  indexar();
+  for(const [nome,fn] of [['mapa',desenharMapa],['painéis',paineis],['conferência',conferencia]]){try{fn();}catch(e){console.error(nome,e);$('banner').insertAdjacentHTML('beforeend',`<div class="banner">Erro ao montar ${esc(nome)}: ${esc(e.message)}</div>`);}}
+  if(aba==='inv') try{inventario();}catch(e){console.error(e);}
+  if(selecionado&&$('gaveta').classList.contains('on')){const n=I.nos.get(selecionado);if(n)abrirNo(n);}
+}
+let ultimoGerado=0;
+async function atualizar(){
+  try{
+    const r=await fetch('/api/snapshot',{cache:'no-store'});
+    const j=await r.json();
+    if(!j.sensores){ if(!D) $('banner').innerHTML=`<div class="banner warn">${esc(j.erro||'Aguardando a primeira coleta…')}</div>`; return setTimeout(atualizar,5000); }
+    if(j.gerado!==ultimoGerado||!D){ultimoGerado=j.gerado;D=j;render();} else {D.erro=j.erro;paineis();}
+  }catch(e){ $('pPrtg').className='pill bad'; $('pPrtg').textContent='servidor local fora'; $('banner').innerHTML=`<div class="banner">Sem contato com o servidor da topologia (${esc(e.message)}). Tentando de novo…</div>`; }
+}
+setInterval(()=>{if(D){const s=Math.round(Date.now()/1000-D.gerado);$('pAt').textContent=`coleta há ${s<90?s+' s':Math.round(s/60)+' min'}`;}},1000);
+try{const a=localStorage.getItem('topo-aba');if(a&&$('sec-'+a))abrirAba(a);}catch(e){}
+atualizar(); setInterval(atualizar,30000);
+</script>
+</body>
+</html>

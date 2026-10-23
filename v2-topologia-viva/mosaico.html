@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaico NOC NOC</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{--bg0:#050912;--ink:#eaf2ff;--muted:#7f93b2;--line:#1c2a42;--ok:#27d17f;--warn:#ffc53d;--bad:#ff4d6a;--unusual:#ff8c42;--paused:#5b8dff;--known:#d6a64a;
+--cond:"Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;--mono:"JetBrains Mono",Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;color:var(--ink);font-family:var(--cond);overflow:hidden}
+body{background:radial-gradient(1200px 700px at 15% 0%,#12203a 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#1a1030 0%,transparent 55%),var(--bg0);display:grid;grid-template-rows:auto auto 1fr auto;gap:1.2vh;padding:1.6vh 1.6vw}
+body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;opacity:.18;pointer-events:none;mask-image:radial-gradient(circle at 50% 40%,#000 30%,transparent 80%)}
+header{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2vw}
+.anel{width:clamp(110px,11vh,170px);aspect-ratio:1;position:relative}
+.anel svg{width:100%;height:100%;transform:rotate(-90deg)}
+.anel .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:.9}
+.anel .num b{font-size:clamp(30px,4vh,56px);font-weight:800}
+.anel .num span{font:clamp(10px,1.1vh,14px) var(--mono);color:var(--muted)}
+.veredito .k{font:600 clamp(11px,1.3vh,16px) var(--mono);letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.veredito h1{margin:.1em 0 0;font-size:clamp(34px,6vh,84px);font-weight:800;line-height:.95;text-wrap:balance}
+.veredito h1 em{font-style:normal;color:var(--vc)}
+.hora{text-align:right}
+.hora b{display:block;font-size:clamp(40px,7vh,96px);font-weight:700;line-height:.9;font-variant-numeric:tabular-nums}
+.hora span{font:clamp(11px,1.3vh,16px) var(--mono);color:var(--muted)}
+#causas{display:flex;flex-direction:column;gap:.6vh}
+.causa{position:relative;overflow:hidden;background:linear-gradient(90deg,color-mix(in srgb,var(--bad) 35%,transparent),transparent);border-left:6px solid var(--bad);padding:.8vh 1.2vw;font-size:clamp(18px,2.4vh,32px);font-weight:700;border-radius:6px}
+.causa::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:varre 3s linear infinite}
+@keyframes varre{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+main{display:grid;grid-template-columns:1fr 1.7fr 1fr;grid-template-rows:repeat(3,auto) 1fr;grid-template-areas:'borda serv dados' 'f5 serv nucleo' 'vigia serv nucleo';gap:2vh 2.2vw;align-content:start;overflow:hidden}
+@media (max-width:1100px){main{grid-template-columns:1fr;grid-template-areas:none}main .dom{grid-area:auto!important}}
+.dom{position:relative;padding-top:2.6vh}
+.dom h2{position:absolute;top:0;left:0;margin:0;font:600 clamp(11px,1.25vh,15px) var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--muted);display:flex;gap:.8em;align-items:center}
+.dom h2 i{font-style:normal;padding:0 .5em;border-radius:3px;border:1px solid var(--line);color:var(--dc,var(--muted))}
+.favo{position:relative;--h:var(--hx,110px);--w:calc(var(--h)*1.1547)}
+.hex{width:var(--w);height:var(--h);position:absolute;left:var(--x);top:var(--y)}
+.hex .f{position:absolute;inset:3px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:linear-gradient(160deg,color-mix(in srgb,var(--c) 30%,#121c2e),#0c1424 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 18%}
+.hex .b{position:absolute;inset:0;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:var(--c);opacity:.85}
+.hex .ic{font-size:calc(var(--h)*.22);line-height:1}
+.hex .n{font-weight:700;font-size:calc(var(--h)*.14);line-height:1.02;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hex .v{font:600 calc(var(--h)*.095) var(--mono);color:var(--muted);margin-top:2px;white-space:nowrap}
+.hex .tag{font:700 calc(var(--h)*.085) var(--mono);letter-spacing:.08em;color:var(--c);margin-top:1px}
+.hex.ok .b{opacity:.45}
+.hex.ok .tag{display:none}
+.hex.conh .f{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--known) 22%,#121c2e) 0 8px,#0f1828 8px 16px)}
+.hex.paus .f{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--paused) 22%,#121c2e) 0 6px,#0f1828 6px 12px)}
+.hex.prob{z-index:2}
+.hex.prob .f{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--c) 55%,#121c2e),#140d18 85%)}
+.hex.prob .v{color:var(--ink)}
+.hex.fora{transform:scale(1.15);z-index:3}
+.hex.fora .b{animation:pulsa 1.8s ease-in-out infinite}
+@keyframes pulsa{50%{opacity:.35}0%,100%{opacity:1;filter:drop-shadow(0 0 12px var(--c))}}
+.hex.afet{opacity:.45}
+.hex.afet .tag::after{content:" ↑"}
+@media (prefers-reduced-motion:reduce){.hex.fora .b,.causa::after,.trilho span{animation:none}}
+footer{display:grid;grid-template-columns:auto 1fr auto;gap:1vw;align-items:center;border-top:1px solid var(--line);padding-top:.8vh;font:clamp(12px,1.4vh,17px) var(--mono);color:var(--muted)}
+.trilho{overflow:hidden;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.trilho span{display:inline-block;padding-left:100%;animation:letreiro var(--dur,40s) linear infinite}
+@keyframes letreiro{to{transform:translateX(-100%)}}
+.trilho b{color:var(--ink)}
+.leg{display:flex;gap:1.2em}
+.leg i{font-style:normal}
+#erro{display:none;position:fixed;bottom:5vh;left:50%;transform:translateX(-50%);background:#3a2a05;border:1px solid var(--warn);color:var(--warn);padding:8px 16px;border-radius:8px;font:14px var(--mono);z-index:9}
+</style>
+</head>
+<body>
+<header>
+  <div class="anel" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="#1c2a42" stroke-width="12"/><circle id="arco" cx="60" cy="60" r="52" fill="none" stroke="var(--ok)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 327"/></svg><div class="num"><b id="pct">--</b><span id="frac">serviços OK</span></div></div>
+  <div class="veredito"><div class="k">NOC · NOC · caminho do usuário</div><h1 id="titulo">Carregando…</h1></div>
+  <div class="hora"><b id="relogio">--:--</b><span id="data">—</span></div>
+</header>
+<div id="causas"></div>
+<main id="dominios"></main>
+<footer>
+  <span id="coleta">coleta —</span>
+  <div class="trilho"><span id="letreiro">—</span></div>
+  <div class="leg"><i style="color:var(--ok)">⬢ OK</i><i style="color:var(--warn)">⬢ AVISO</i><i style="color:var(--bad)">⬢ FORA</i><i style="color:var(--known)">⚑ registrado</i><i style="color:var(--paused)">⏸ pausado</i><i style="opacity:.45">Flavio-Gabriel</i></div>
+</footer>
+<div id="erro"></div>
+<script>
+'use strict';
+// Severidade: 6 FORA · 4 AVISO · 3 INCOMUM · 2 JÁ REGISTRADO · 1 PAUSADO · 0 OK
+const ROT={6:['FORA','--bad'],4:['AVISO','--warn'],3:['INCOMUM','--unusual'],2:['⚑ REGISTRADO','--known'],1:['⏸ PAUSADO','--paused'],0:['OK','--ok']};
+const ICO={link_principal:'🌐',link_backup:'🛟',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗',prtg:'📡'};
+const DOMINIOS=[['Borda e links',[1,2],'borda'],['Entrada F5',[3],'f5'],['Serviços ao público',[4],'serv'],['Aplicação e dados',[5],'dados'],['Núcleo',[6],'nucleo'],['Quem vigia',['obs'],'vigia']];
+const sevSt=c=>({5:6,13:6,14:6,4:4,10:3,7:1,8:1,9:1,11:1,12:1,3:0}[c]??0);
+const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const $=id=>document.getElementById(id);
+let D=null, desde={};
+try{desde=JSON.parse(localStorage.getItem('mosaico-desde')||'{}');}catch(e){}
+
+function avaliar(){
+  const sens=new Map(D.sensores.map(s=>[s.id,s])), conh=D.config.conhecidos||{};
+  const devs=new Map(); D.sensores.forEach(s=>{if(!devs.has(s.dev))devs.set(s.dev,[]);devs.get(s.dev).push(s);});
+  const grupos=D.grupos;
+  const doGrupo=nome=>{const ids=new Set(grupos.filter(g=>g.nome===nome).map(g=>g.id));let mud=true;while(mud){mud=false;grupos.forEach(g=>{if(ids.has(g.pai)&&!ids.has(g.id)){ids.add(g.id);mud=true;}});}
+    return D.devices.filter(d=>ids.has(d.pai)).flatMap(d=>devs.get(d.id)||[]);};
+  const obs=new Set((D.config.observadores||[]).map(n=>n.id));
+  return [...D.config.nos,...(D.config.observadores||[])].filter(n=>!n.fixo&&!n.especial).map(n=>{
+    const ids=[...(n.sensores||[]),...(n.itens||[]).flatMap(i=>i.sensores||[])];
+    let ss=[...new Set(ids)].map(i=>sens.get(i)).filter(Boolean);
+    if(n.grupoNome) ss=ss.concat(doGrupo(n.grupoNome));
+    let sev=0, pior=null, nPaus=0;
+    ss.forEach(s=>{let v=sevSt(s.st);if(v>=3&&conh[String(s.id)])v=2;if(v===1)nPaus++;if(v>sev){sev=v;pior=s;}});
+    if(ss.length&&nPaus===ss.length) sev=1;
+    const base=n.valorDe?sens.get(n.valorDe):(n.capacidadeMbit?ss[0]:null);
+    return {n,sev,pior,val:base?base.val:'',obs:obs.has(n.id),prob:ss.filter(s=>sevSt(s.st)>=3&&!conh[String(s.id)]).length};
+  });
+}
+function ancestrais(id){const L=D.config.ligacoes||[],r=new Set();let fila=[id];while(fila.length){const x=fila.pop();L.forEach(([a,b])=>{if(b===x&&!r.has(a)){r.add(a);fila.push(a);}});}return r;}
+
+function render(){
+  const itens=avaliar(), agora=Date.now();
+  itens.forEach(i=>{const k=i.n.id,d=desde[k];if(!d||d.sev!==i.sev)desde[k]={sev:i.sev,t:agora};i.desde=desde[k].t;});
+  try{localStorage.setItem('mosaico-desde',JSON.stringify(desde));}catch(e){}
+  const foraIds=new Set(itens.filter(i=>i.sev===6).map(i=>i.n.id));  // só uma QUEDA explica outra
+  const causa={}; itens.filter(i=>i.sev>=3).forEach(i=>{const anc=[...ancestrais(i.n.id)].find(a=>foraIds.has(a));if(anc)causa[i.n.id]=anc;});
+  const raizes={}; Object.entries(causa).forEach(([f,r])=>{let x=r;while(causa[x])x=causa[x];(raizes[x]??=[]).push(f);});
+  const nome=id=>(itens.find(i=>i.n.id===id)||{n:{rotulo:id}}).n.rotulo;
+  $('causas').innerHTML=Object.entries(raizes).filter(([,f])=>f.length>=2).map(([r,f])=>`<div class="causa">⚠ ${esc(nome(r))} FORA — ${f.length} serviços afetados: ${esc(f.map(nome).join(' · '))}</div>`).join('');
+  const prob=itens.filter(i=>i.sev>=3), muitos=prob.length>8;
+  const hex=i=>{const [txt,c]=ROT[i.sev], af=causa[i.n.id];
+    // bloco em destaque (grande) só para QUEDA sem causa acima: i.sev===6&&!causa[i.n.id]&&!muitos?'grande'
+    const cls=i.sev===6&&!af&&!muitos?'prob fora':i.sev>=3?'prob':i.sev===2?'conh':i.sev===1?'paus':'ok';
+    const min=Math.round((agora-i.desde)/60000), tempo=i.sev>=2&&min>0?` ${min<60?min+'m':Math.round(min/60)+'h'}`:'';
+    const dica=i.pior&&i.pior.msg&&i.pior.msg!=='OK'?`${i.pior.nome}: ${i.pior.msg}`:i.n.sub||'';
+    return `<div class="hex ${cls}${af?' afet':''}" style="--c:var(${c})" title="${esc(i.n.rotulo)} — ${esc(dica)}"><div class="b"></div><div class="f"><div class="ic">${ICO[i.n.id]||'⬢'}</div><div class="n">${esc(i.n.rotulo)}</div>${i.val&&i.sev<3?`<div class="v">${esc(i.val)}</div>`:''}<div class="tag">${txt}${tempo}</div></div></div>`;};
+  $('dominios').innerHTML=DOMINIOS.map(([titulo,cams,area])=>{
+    const xs=itens.filter(i=>cams.includes('obs')?i.obs:!i.obs&&cams.includes(i.n.camada)).sort((a,b)=>b.sev-a.sev||a.desde-b.desde);
+    if(!xs.length) return '';
+    const piorD=Math.max(...xs.map(i=>i.sev)), nP=xs.filter(i=>i.sev>=3).length;
+    const selo=nP?`<i style="--dc:var(${ROT[piorD][1]})">${nP} ${nP===1?'alerta':'alertas'}</i>`:`<i style="--dc:var(--ok)">ok</i>`;
+    return `<section class="dom" style="grid-area:${area}"><h2>${esc(titulo)} ${selo}</h2><div class="favo">${xs.map(hex).join('')}</div></section>`;
+  }).join('');
+  encaixar();
+  const total=itens.length, nOk=itens.filter(i=>i.sev<3).length, nFora=itens.filter(i=>i.sev===6).length, nAv=prob.length-nFora;
+  const C=2*Math.PI*52;
+  $('pct').textContent=Math.round(nOk/total*100)+'%'; $('frac').textContent=`${nOk} de ${total} OK`;
+  const arco=$('arco'); arco.setAttribute('stroke-dasharray',`${C*nOk/total} ${C}`); arco.setAttribute('stroke',`var(${nFora?'--bad':nAv?'--warn':'--ok'})`);
+  const t=$('titulo');
+  t.style.setProperty('--vc',`var(${nFora?'--bad':nAv?'--warn':'--ok'})`);
+  t.innerHTML=nFora?`<em>${nFora} fora do ar</em>${nAv?` · ${nAv} em aviso`:''}`:nAv?`Nenhuma queda · <em>${nAv} em aviso</em>`:`<em>Tudo funcionando</em>`;
+  const linhas=prob.slice().sort((a,b)=>b.sev-a.sev).map(i=>`<b>${esc(i.n.rotulo)}</b> ${ROT[i.sev][0]}: ${esc(i.pior?i.pior.nome+' — '+(i.pior.msg||'').split(/[—(]/)[0].replace(/Aviso causado por valor de pesquisa /g,'').trim().slice(0,90):'')}`);
+  const nConh=itens.filter(i=>i.sev===2).length;
+  $('letreiro').innerHTML=(linhas.length?linhas.join('   ◆   '):'Nenhum alerta novo — usuários sendo atendidos normalmente')+`   ◆   ${nConh} itens já registrados com as equipes   ◆   Instatus vigia de fora · PRTG vigia de dentro`;
+  $('letreiro').style.setProperty('--dur',`${Math.max(30,linhas.length*12)}s`);
+  const idade=Math.round(Date.now()/1000-D.gerado), atras=idade>(D.intervalo||60)*3;
+  $('coleta').textContent=`PRTG · coleta há ${idade<90?idade+'s':Math.round(idade/60)+'min'}`;
+  const e=$('erro'); e.style.display=(D.erro||atras)?'block':'none'; e.textContent=D.erro||(atras?`Dados com ${Math.round(idade/60)} min de atraso`:'');
+}
+// Favo de mel exato: colunas alternadas meio hexágono abaixo, sem sobreposição
+function encaixar(){
+  const alt=innerHeight, hx=Math.max(70,Math.min(170,alt*0.12));
+  document.querySelectorAll('.favo').forEach(f=>{
+    const W=f.parentElement.clientWidth, h=hx, w=h*1.1547, passo=w*0.75;
+    const cols=Math.max(1,Math.floor((W-w)/passo)+1), hs=[...f.children];
+    hs.forEach((e,i)=>{const c=i%cols,r=Math.floor(i/cols);e.style.setProperty('--x',(c*passo)+'px');e.style.setProperty('--y',(r*h+(c%2?h/2:0))+'px');});
+    const linhas=Math.ceil(hs.length/cols);
+    f.style.setProperty('--hx',h+'px'); f.style.height=(linhas*h+(hs.length>1&&cols>1?h/2:0)+8)+'px';
+  });
+}
+addEventListener('resize',()=>D&&encaixar());
+let VERSAO=null;
+async function atualizar(){
+  try{const r=await fetch('/api/snapshot',{cache:'no-store'});
+    if(r.status===401){location.reload();return;}  /* login expirou */
+    const j=await r.json();
+    if(j.sensores&&j.versao&&VERSAO&&j.versao!==VERSAO){location.reload();return;}  /* tela atualizada no servidor */
+    if(j.sensores){VERSAO=j.versao||VERSAO;D=j;render();$('erro').style.display='none';}else{$('erro').style.display='block';$('erro').textContent=j.erro||'Aguardando coleta…';}}
+  catch(e){$('erro').style.display='block';$('erro').textContent='Sem contato com o servidor da topologia. Tentando de novo…';}
+}
+setInterval(()=>{const d=new Date();$('relogio').textContent=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});$('data').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});},1000);
+atualizar(); setInterval(atualizar,20000);
+</script>
+<script>
+/* Playlist para TV: /fluxo?playlist  (ou ?playlist=fluxo,mosaico&t=120). Alterna sozinho entre as telas. */
+(function(){const q=new URLSearchParams(location.search);if(!q.has('playlist'))return;
+  const telas=(q.get('playlist')||'fluxo,mosaico').split(',').map(s=>s.trim()).filter(Boolean), t=Math.max(30,+q.get('t')||120);
+  const atual=location.pathname.replace('/','')||telas[0], prox=telas[(telas.indexOf(atual)+1)%telas.length];
+  const fim=Date.now()+t*1000, b=document.createElement('div');
+  b.style.cssText='position:fixed;left:50%;top:.6vh;transform:translateX(-50%);font:12px Consolas,monospace;color:#7f93b2;background:rgba(8,12,22,.85);border:1px solid #1c2a42;border-radius:99px;padding:2px 10px;z-index:9';
+  document.body.appendChild(b);
+  setInterval(()=>{const r=Math.max(0,Math.round((fim-Date.now())/1000));b.textContent=`▶ playlist: troca para ${prox} em ${Math.floor(r/60)}:${String(r%60).padStart(2,'0')} · para fixar, abra sem ?playlist`;},1000);
+  setTimeout(()=>{location.href=`/${prox}?${q.toString()}`;},t*1000);})();
+</script>
+</body>
+</html>
