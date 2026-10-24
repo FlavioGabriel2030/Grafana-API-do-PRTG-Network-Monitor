@@ -92,11 +92,109 @@
       ]
     },
     {
-      "id": "banco",
+      "id": "normativos",
+      "rotulo": "Aplicação 1",
+      "sub": "app1.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2110
+      ]
+    },
+    {
+      "id": "plenaria",
+      "rotulo": "Aplicação 2",
+      "sub": "app2.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2111
+      ]
+    },
+    {
+      "id": "ged",
+      "rotulo": "Aplicação 3",
+      "sub": "app3.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2112
+      ]
+    },
+    {
+      "id": "sic",
+      "rotulo": "Aplicação 4",
+      "sub": "app4.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2113
+      ]
+    },
+    {
+      "id": "soea",
+      "rotulo": "Aplicação 5",
+      "sub": "app5.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2115
+      ]
+    },
+    {
+      "id": "cpa",
+      "rotulo": "Aplicação 6",
+      "sub": "app6.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2116
+      ]
+    },
+    {
+      "id": "fiscalizacao",
+      "rotulo": "Aplicação 7",
+      "sub": "app7.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2117
+      ]
+    },
+    {
+      "id": "sei",
+      "rotulo": "Aplicação 8",
+      "sub": "app8.exemplo.org",
+      "camada": 4,
+      "sensores": [
+        2118
+      ]
+    },
+    {
+      "id": "drupal",
+      "rotulo": "CMS",
+      "sub": "gerenciador de conteúdo",
+      "camada": 5,
+      "sensores": [
+        2203
+      ]
+    },
+    {
+      "id": "banco_soea",
+      "rotulo": "Banco principal",
+      "sub": "SQL",
+      "camada": 5,
+      "sensores": [
+        2204
+      ]
+    },
+    {
+      "id": "lai",
+      "rotulo": "Arquivos",
+      "sub": "servidor de arquivos",
+      "camada": 5,
+      "sensores": [
+        2205
+      ]
+    },
+    {
+      "id": "bancos",
       "rotulo": "Bancos de dados",
       "sub": "grupo do PRTG",
       "camada": 5,
-      "fixo": true,
       "grupoNome": "Bancos de dados"
     },
     {
@@ -106,6 +204,15 @@
       "camada": 5,
       "sensores": [
         2201
+      ]
+    },
+    {
+      "id": "backup",
+      "rotulo": "Backup",
+      "sub": "rotina noturna",
+      "camada": 5,
+      "sensores": [
+        2202
       ]
     },
     {
@@ -133,6 +240,15 @@
       "camada": 6,
       "sensores": [
         2303
+      ]
+    },
+    {
+      "id": "integradores",
+      "rotulo": "Integrações",
+      "sub": "APIs de parceiros",
+      "camada": 6,
+      "sensores": [
+        2304
       ]
     }
   ],
@@ -195,16 +311,6 @@
       "rede"
     ],
     [
-      "site",
-      "banco",
-      "rede"
-    ],
-    [
-      "consulta",
-      "banco",
-      "rede"
-    ],
-    [
       "fortigate",
       "core1",
       "rede"
@@ -222,6 +328,106 @@
     [
       "core1",
       "virtual",
+      "rede"
+    ],
+    [
+      "f5",
+      "normativos",
+      "rede"
+    ],
+    [
+      "f5",
+      "plenaria",
+      "rede"
+    ],
+    [
+      "f5",
+      "ged",
+      "rede"
+    ],
+    [
+      "f5",
+      "sic",
+      "rede"
+    ],
+    [
+      "site",
+      "bancos",
+      "rede"
+    ],
+    [
+      "consulta",
+      "bancos",
+      "rede"
+    ],
+    [
+      "ged",
+      "bancos",
+      "rede"
+    ],
+    [
+      "sic",
+      "bancos",
+      "hipotese"
+    ],
+    [
+      "core1",
+      "backup",
+      "rede"
+    ],
+    [
+      "f5",
+      "soea",
+      "rede"
+    ],
+    [
+      "f5",
+      "cpa",
+      "rede"
+    ],
+    [
+      "f5",
+      "fiscalizacao",
+      "rede"
+    ],
+    [
+      "fortigate",
+      "sei",
+      "externo"
+    ],
+    [
+      "site",
+      "drupal",
+      "rede"
+    ],
+    [
+      "normativos",
+      "drupal",
+      "rede"
+    ],
+    [
+      "soea",
+      "banco_soea",
+      "rede"
+    ],
+    [
+      "cpa",
+      "banco_soea",
+      "rede"
+    ],
+    [
+      "fiscalizacao",
+      "bancos",
+      "rede"
+    ],
+    [
+      "ged",
+      "lai",
+      "rede"
+    ],
+    [
+      "core2",
+      "integradores",
       "rede"
     ]
   ],

@@ -10,6 +10,7 @@ Configuração por variáveis de ambiente (é assim que roda em container), com 
   TOPO_BIND / TOPO_PORTA      0.0.0.0 / 8090
   TOPO_USUARIO / TOPO_SENHA_SHA256   login da página (ou o arquivo acesso.txt = usuario:sha256)
   TOPO_INTERVALO      segundos entre coletas (padrão 60)
+  TOPO_DEMO=1         modo demonstração: dados fictícios, sem PRTG (ver demo.py)
   IPAM_CSV            exportação do phpIPAM (padrão ../ipam/ipam_servidores.csv)
 """
 import base64, csv, gzip, hashlib, hmac, ipaddress, json, logging, os, re, socket, ssl, sys, threading, time, urllib.request
@@ -29,9 +30,12 @@ NOTA_LOCAL = os.environ.get('TOPO_NOTA', '')  # opcional: arquivo local com a ch
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s', stream=sys.stdout)
 log = logging.getLogger('topologia')
 CTX = ssl._create_unverified_context()  # o PRTG usa certificado próprio
+DEMO = os.environ.get('TOPO_DEMO') == '1'
 
 
 def ler_chave():
+    if DEMO:
+        return 'demo'
     if os.environ.get('TOPO_PRTG_APIKEY'):
         return os.environ['TOPO_PRTG_APIKEY'].strip()
     arq = os.environ.get('TOPO_PRTG_APIKEY_FILE')
@@ -94,6 +98,9 @@ def ttl_de(caminho):
 
 def prtg_bruto(caminho_query, timeout=90):
     """Busca no PRTG passando pela fila, com até 3 tentativas. Devolve (status, tipo, corpo)."""
+    if DEMO:
+        import demo
+        return demo.responder(caminho_query, carregar_config)
     url = f"{PRTG}{caminho_query}{'&' if '?' in caminho_query else '?'}apitoken={CHAVE}"
     ultimo = None
     for tentativa in range(3):
@@ -163,6 +170,8 @@ def tabela(conteudo, colunas):
 
 
 def grafana_ok():
+    if DEMO:
+        return True
     try:
         return json.loads(baixar(f'{GRAFANA}/api/health', 5)).get('database') == 'ok'
     except Exception:
@@ -171,6 +180,8 @@ def grafana_ok():
 
 def carregar_config():
     arq = os.path.join(PASTA, 'config.json')
+    if DEMO and not os.path.exists(arq):
+        arq = os.path.join(PASTA, 'config.exemplo.json')
     try:
         m = os.path.getmtime(arq)
         if m != estado['config_mtime']:

@@ -11,6 +11,14 @@ Servidor pequeno em Python (sem dependências externas) que lê o PRTG em segund
 
 A chave do PRTG **nunca vai para o navegador**: só o servidor fala com o PRTG.
 
+![Fluxo: tela de TV com o tráfego animado](../docs/prints/fluxo.png)
+
+| Mosaico | Topologia |
+|---|---|
+| ![Mosaico](../docs/prints/mosaico.png) | ![Topologia](../docs/prints/topologia.png) |
+
+*Prints feitos no modo demonstração, com dados fictícios.*
+
 ## Como funciona
 ```
 PRTG ──(a cada 60 s)──> servidor.py ──(/api/snapshot a cada 20 s)──> telas no navegador/TV
@@ -45,6 +53,14 @@ cp .env.example .env    # preencha: URL e chave de LEITURA do PRTG, senhas
 docker compose up -d    # Grafana + Topologia, com reinício automático e checagem de saúde
 ```
 Use Docker Engine numa VM Linux. O Docker Desktop exige licença paga em empresas e órgãos públicos.
+
+## Modo demonstração (sem PRTG)
+Para ver as telas funcionando sem ter um PRTG, ou para tirar prints sem expor dados reais:
+```bash
+set TOPO_DEMO=1
+python servidor.py        # usa config.exemplo.json e dados fictícios que variam a cada coleta
+```
+Abra `http://localhost:8090/fluxo`. Acrescente `?print` ao endereço para desligar as transições (útil em capturas automáticas).
 
 ## `config.json`
 | Campo | Para quê |

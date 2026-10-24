@@ -1,4 +1,4 @@
-# NOC NOC: Grafana + Topologia viva.
+# NOC: Grafana + Topologia viva.
 # Uso: copie .env.example para .env, preencha e rode:  docker compose up -d
 name: noc-topologia
 

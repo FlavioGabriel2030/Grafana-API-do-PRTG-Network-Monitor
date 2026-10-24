@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mosaico NOC NOC</title>
+<title>Mosaico NOC</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 :root{--bg0:#050912;--ink:#eaf2ff;--muted:#7f93b2;--line:#1c2a42;--ok:#27d17f;--warn:#ffc53d;--bad:#ff4d6a;--unusual:#ff8c42;--paused:#5b8dff;--known:#d6a64a;
@@ -67,7 +67,7 @@ footer{display:grid;grid-template-columns:auto 1fr auto;gap:1vw;align-items:cent
 <body>
 <header>
   <div class="anel" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="#1c2a42" stroke-width="12"/><circle id="arco" cx="60" cy="60" r="52" fill="none" stroke="var(--ok)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 327"/></svg><div class="num"><b id="pct">--</b><span id="frac">serviços OK</span></div></div>
-  <div class="veredito"><div class="k">NOC · NOC · caminho do usuário</div><h1 id="titulo">Carregando…</h1></div>
+  <div class="veredito"><div class="k">NOC · caminho do usuário</div><h1 id="titulo">Carregando…</h1></div>
   <div class="hora"><b id="relogio">--:--</b><span id="data">—</span></div>
 </header>
 <div id="causas"></div>
@@ -82,7 +82,7 @@ footer{display:grid;grid-template-columns:auto 1fr auto;gap:1vw;align-items:cent
 'use strict';
 // Severidade: 6 FORA · 4 AVISO · 3 INCOMUM · 2 JÁ REGISTRADO · 1 PAUSADO · 0 OK
 const ROT={6:['FORA','--bad'],4:['AVISO','--warn'],3:['INCOMUM','--unusual'],2:['⚑ REGISTRADO','--known'],1:['⏸ PAUSADO','--paused'],0:['OK','--ok']};
-const ICO={link_principal:'🌐',link_backup:'🛟',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗',prtg:'📡'};
+const ICO={link_principal:'🌐',link_backup:'🔁',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗',prtg:'📡'};
 const DOMINIOS=[['Borda e links',[1,2],'borda'],['Entrada F5',[3],'f5'],['Serviços ao público',[4],'serv'],['Aplicação e dados',[5],'dados'],['Núcleo',[6],'nucleo'],['Quem vigia',['obs'],'vigia']];
 const sevSt=c=>({5:6,13:6,14:6,4:4,10:3,7:1,8:1,9:1,11:1,12:1,3:0}[c]??0);
 const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));

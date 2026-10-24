@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fluxo NOC NOC</title>
+<title>Fluxo NOC</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 :root{--bg:#04070d;--ink:#eaf2ff;--muted:#7f93b2;--line:#1c2a42;--ok:#27d17f;--warn:#ffc53d;--bad:#ff4d6a;--paused:#5b8dff;--known:#d6a64a;
@@ -52,17 +52,19 @@ canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
 @keyframes entra{from{opacity:0;transform:translateX(40px)}}
 #erro{display:none;position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);background:#3a2a05;border:1px solid var(--warn);color:var(--warn);padding:10px 18px;border-radius:8px;font:15px var(--mono)}
 @media (prefers-reduced-motion:reduce){#cartao{transition:none}}
+.sem-anim #cartao .troca{transition:none!important}
 </style>
 </head>
 <body>
 <canvas id="tela"></canvas>
-<div class="topo"><div><div class="k">NOC · NOC · fluxo em tempo real</div><h1 id="titulo">Carregando…</h1></div><div class="hora"><b id="relogio">--:--</b><span id="data"></span></div></div>
+<div class="topo"><div><div class="k">NOC · fluxo em tempo real</div><h1 id="titulo">Carregando…</h1></div><div class="hora"><b id="relogio">--:--</b><span id="data"></span></div></div>
 <div id="cartao" class="saindo"></div>
 <div class="rodape"><span id="coleta">—</span><i><b style="color:#38e1ff">●</b> ida (pedido) · <b style="color:#b69bff">●</b> volta (resposta) · cor = velocidade: <b style="color:#38e1ff">rápido</b> → <b style="color:#27d17f">normal</b> → <b style="color:#ffc53d">lento</b> · mais bolinhas = mais tráfego</i><i style="margin-left:auto;opacity:.45">Flavio-Gabriel</i><i><b style="color:var(--bad)">●</b> fora <b style="color:var(--warn)">●</b> aviso <b style="color:var(--paused)">●</b> pausado</i></div>
 <div id="avisos"></div>
 <div id="erro"></div>
 <script>
 'use strict';
+if(new URLSearchParams(location.search).has('print'))document.documentElement.classList.add('sem-anim');  /* ?print: sem transição, para capturas de tela */
 const COR={ok:'#27d17f',warn:'#ffc53d',bad:'#ff4d6a',paused:'#5b8dff',known:'#d6a64a',neutro:'#3f5577'};
 const ICO={usuario:'🧑',instatus:'🌍',link_principal:'🌐',link_backup:'🔁',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',lai:'📨',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗'};
 const pausadoSt=c=>[7,8,9,11,12].includes(c);
