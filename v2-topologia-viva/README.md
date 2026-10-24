@@ -11,7 +11,7 @@ Servidor pequeno em Python (sem dependências externas) que lê o PRTG em segund
 
 A chave do PRTG **nunca vai para o navegador**: só o servidor fala com o PRTG.
 
-![Fluxo: tela de TV com o tráfego animado](../docs/prints/fluxo.png)
+![Fluxo: tela de TV com o tráfego animado](../docs/prints/fluxo.gif)
 
 | Mosaico | Topologia |
 |---|---|
