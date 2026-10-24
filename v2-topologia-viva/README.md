@@ -62,6 +62,14 @@ python servidor.py        # usa config.exemplo.json e dados fictícios que varia
 ```
 Abra `http://localhost:8090/fluxo`. Acrescente `?print` ao endereço para desligar as transições (útil em capturas automáticas).
 
+### Painéis de demonstração do Grafana
+Em `deploy/grafana/demo/` estão três painéis (NOC, Serviços ao público, Firewall) prontos para importar.
+1. Rode o servidor com `TOPO_DEMO=1`.
+2. No Grafana, crie uma fonte de dados **Infinity** com uid `prtg-demo` e *Allowed hosts* = endereço do servidor.
+3. Importe os JSON (**Dashboards → New → Import**) e troque `http://topologia:8090` pelo endereço do servidor, se for diferente.
+
+O modo demo responde aos mesmos formatos do PRTG que os painéis usam: `table.json`, `status.json`, `historicdata.csv` e `historicdata.json`.
+
 ## `config.json`
 | Campo | Para quê |
 |---|---|

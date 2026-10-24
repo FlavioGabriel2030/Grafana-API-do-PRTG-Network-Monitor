@@ -1,14 +1,15 @@
 """Modo demonstração (TOPO_DEMO=1): finge ser o PRTG com dados fictícios.
 
 Serve para ver as telas funcionando sem ter um PRTG e para tirar prints sem expor dados reais.
-Responde só ao que o servidor usa: table.json (groups, devices, sensors) e historicdata.csv.
+Responde ao que o servidor e os painéis de demonstração do Grafana usam:
+table.json, status.json, historicdata.csv e historicdata.json.
 Os valores variam um pouco a cada coleta, para a tela ter vida.
 """
-import json, math, random, time
+import json, math, random, time, urllib.parse
 from datetime import datetime, timedelta
 
 UP, AVISO, FORA, PAUSADO = 3, 4, 5, 7
-STATUS = {UP: 'Ativo', AVISO: 'Aviso', FORA: 'Fora do ar', PAUSADO: 'Pausado'}
+STATUS = {UP: 'OK', AVISO: 'Aviso', FORA: 'Inativo', PAUSADO: 'Pausado'}
 
 # tempo de resposta "típico" por item da config de exemplo (ms); links usam Mbit/s
 BASE_MS = {'soea': 85, 'cpa': 22, 'fiscalizacao': 120, 'sei': 210, 'drupal': 4, 'banco_soea': 3, 'lai': 9, 'integradores': 2, 'normativos': 35, 'plenaria': 70, 'ged': 180, 'sic': 260, 'backup': 420, 'site': 95, 'consulta': 40, 'osticket': 140, 'virtual': 25, 'f5': 8, 'fortigate': 3, 'vpn': 6,
@@ -91,20 +92,113 @@ def _historico(sid):
     return '\n'.join(linhas).encode('utf-8')
 
 
+def _ole(t):
+    """Data RAW do PRTG: dias desde 30/12/1899, em UTC (o texto ao lado fica no horário local)."""
+    return t.timestamp() / 86400 + 25569
+CANAIS_TRAFEGO = ['Tráfego total (velocidade)', 'Traffic Total (velocidade)', 'Tráfego de entrada (velocidade)', 'Tráfego de saída (velocidade)']
+CANAIS_HTTP = ['Tempo de carregamento', 'Loading Time', 'Tempo de inoperância', 'Downtime']
+
+
+def _data(txt, padrao):
+    try:
+        return datetime.strptime(txt, '%Y-%m-%d-%H-%M-%S')
+    except (TypeError, ValueError):
+        return padrao
+
+
+def _serie(sid, inicio, fim, avg):
+    """Pontos (instante, valores por canal) entre início e fim. Tráfego em bytes/s, tempo em ms, inoperância em %."""
+    passo = max(60, avg or 60)
+    n = max(2, min(1500, int((fim - inicio).total_seconds() // passo)))
+    passo = (fim - inicio).total_seconds() / n
+    h = _id_hash(sid)
+    escala = 1 + h % 9                       # cada sensor com um tamanho diferente
+    for i in range(n + 1):
+        t = inicio + timedelta(seconds=passo * i)
+        dia = math.sin((t.hour + t.minute / 60 - 6) / 24 * 2 * math.pi)  # pico no meio do dia
+        ruido = random.uniform(.85, 1.15)
+        mbit = max(.2, (18 + 50 * max(0, dia)) * escala * ruido)
+        ms = (40 + h % 120) * (1 + .25 * max(0, dia)) * ruido + (400 if random.random() < .01 else 0)
+        fora = 0.0 if random.random() > .04 else round(random.uniform(.1, 1.5), 2)
+        bps = mbit * 1e6 / 8
+        yield t, {CANAIS_TRAFEGO[0]: bps, CANAIS_TRAFEGO[1]: bps, CANAIS_TRAFEGO[2]: bps * .68, CANAIS_TRAFEGO[3]: bps * .32,
+                  CANAIS_HTTP[0]: ms, CANAIS_HTTP[1]: ms, CANAIS_HTTP[2]: fora, CANAIS_HTTP[3]: fora}
+
+
+def _hist_csv(sid, inicio, fim, avg):
+    canais = CANAIS_TRAFEGO + CANAIS_HTTP
+    cab = ['Data e hora', 'Data e hora(RAW)'] + [x for c in canais for x in (c, c + '(RAW)')]
+    linhas = [','.join(f'"{c}"' for c in cab)]
+    for t, v in _serie(sid, inicio, fim, avg):
+        cel = [t.strftime('%d/%m/%Y %H:%M:%S'), f'{_ole(t):.10f}']
+        for c in canais:
+            cel += [f'{v[c]:.2f}', f'{v[c]:.4f}']
+        linhas.append(','.join(f'"{c}"' for c in cel))
+    return '\n'.join(linhas).encode('utf-8')
+
+
+def _hist_json(sid, inicio, fim, avg):
+    itens = []
+    for t, v in _serie(sid, inicio, fim, avg):
+        bps = v[CANAIS_TRAFEGO[0]]  # o JSON do PRTG traz só o canal principal: value / value_raw
+        it = {'datetime': t.strftime('%d/%m/%Y %H:%M:%S'), 'datetime_raw': _ole(t),
+              'value': f'{bps * 8 / 1e6:.0f} Mbit/s', 'value_raw': round(bps, 4), 'coverage': '100 %', 'coverage_raw': 10000}
+        itens.append(it)
+    return json.dumps({'prtg-version': 'demo', 'treesize': len(itens), 'histdata': itens}, ensure_ascii=False).encode('utf-8')
+
+
+def _status():
+    return json.dumps({'Alarms': '3', 'AckAlarms': '1', 'WarnSens': '6', 'UpSens': '412', 'PausedSens': '9',
+                       'UnusualSens': '4', 'TotalSens': 435, 'Version': 'demo', 'object': {}}).encode('utf-8')
+
+
+def _linha_tabela(x, devs, grupos, n):
+    """Acrescenta os campos que os painéis pedem (device, group, sensor, *_raw...)."""
+    dev = devs.get(x['parentid'], {})
+    st = x['status_raw']
+    try:
+        ms = float(str(x['lastvalue']).split()[0].replace(',', '.'))
+    except (ValueError, IndexError):
+        ms = ''
+    up = 99.9 - (_id_hash(x['objid']) % 9) / 10  # o PRTG manda uptime_raw = % x 10000
+    return dict(x, objid_raw=x['objid'], device=dev.get('name', f'Aplicação {n}'), sensor=x['name'],
+                group=grupos.get(dev.get('parentid'), 'Serviços ao público'), status=STATUS.get(st, ''),
+                lastvalue_raw=ms, uptime=f'{up:.1f} %', uptime_raw=round(up * 10000),
+                downtimesince='12 min' if st == FORA else '', message=x.get('message_raw', ''))
+
+
 def responder(caminho_query, carregar_config):
     caminho, _, query = caminho_query.partition('?')
-    params = dict(p.split('=', 1) for p in query.split('&') if '=' in p)
+    multi = urllib.parse.parse_qs(query)
+    params = {k: v[-1] for k, v in multi.items()}
+    agora = datetime.now()
+    ini, fim = _data(params.get('sdate'), agora - timedelta(hours=6)), _data(params.get('edate'), agora)
+    avg = int(params.get('avg', '0') or 0)
     if caminho.endswith('/historicdata.csv'):
-        return 200, 'text/csv; charset=utf-8', _historico(params.get('id', '0'))
+        return 200, 'text/csv; charset=utf-8', _hist_csv(params.get('id', '0'), ini, fim, avg)
+    if caminho.endswith('/historicdata.json'):
+        return 200, 'application/json', _hist_json(params.get('id', '0'), ini, fim, avg)
+    if caminho.endswith('/status.json'):
+        return 200, 'application/json', _status()
     if caminho.endswith('/table.json'):
         grupos, devices, sensores = _montar(carregar_config())
         conteudo = params.get('content', '')
         dados = {'groups': grupos, 'devices': devices, 'sensors': sensores}.get(conteudo, [])
-        filtro = params.get('filter_objid')
-        if filtro:
-            dados = [x for x in dados if str(x['objid']) == filtro]
+        if conteudo == 'sensors':
+            devs = {d['objid']: d for d in devices}
+            gnomes = {g['objid']: g['name'] for g in grupos}
+            ids = [int(i) for i in multi.get('filter_objid', []) if i.isdigit()]
+            if ids:  # os painéis pedem IDs do PRTG real: devolve um sensor fictício para cada um
+                por_id = {x['objid']: x for x in dados}
+                dados = [por_id.get(i) or {'objid': i, 'parentid': -1, 'name': 'Robô sentinela: página carregou',
+                                           'status_raw': UP, 'message_raw': 'OK', 'lastvalue': f'{40 + _id_hash(i) % 160} ms',
+                                           'tags': 'demo', 'type_raw': 'http'} for i in ids]
+            sts = [int(v) for v in multi.get('filter_status', []) if v.isdigit()]
+            if sts:
+                dados = [x for x in dados if x['status_raw'] in sts]
+            dados = [_linha_tabela(x, devs, gnomes, n + 1) for n, x in enumerate(dados)]
         for x in dados:  # o PRTG devolve status em texto também
-            if 'status_raw' in x:
+            if 'status_raw' in x and 'status' not in x:
                 x['status'] = STATUS.get(x['status_raw'], '')
         return 200, 'application/json', json.dumps({'prtg-version': 'demo', conteudo: dados}, ensure_ascii=False).encode('utf-8')
     return 404, 'text/plain; charset=utf-8', b'Modo demo: endpoint nao simulado'

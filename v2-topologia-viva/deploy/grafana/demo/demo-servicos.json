@@ -1,0 +1,2757 @@
+{
+  "description": "Portais públicos: estão no ar, estão rápidos e quanto ficaram disponíveis.",
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "device",
+              "text": "Portal",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "Situação",
+              "type": "string"
+            },
+            {
+              "selector": "lastvalue_raw",
+              "text": "Tempo de resposta (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "uptime_raw",
+              "text": "upraw",
+              "type": "number"
+            },
+            {
+              "selector": "group",
+              "text": "Grupo",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "upraw / 10000",
+              "text": "Disponibilidade (%)",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "sensors",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/table.json?content=sensors&columns=objid,device,status,lastvalue,uptime,group&filter_objid=5844&filter_objid=3941&filter_objid=4488&filter_objid=4560&filter_objid=5437&filter_objid=7516&filter_objid=7517&filter_objid=7518&filter_objid=7519&filter_objid=7520&filter_objid=7521&filter_objid=7522&filter_objid=7524&filter_objid=7525&filter_objid=7527&filter_objid=7529&count=100",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Portais fora do ar agora",
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "OK"
+                  }
+                },
+                "fieldName": "Situação"
+              }
+            ],
+            "match": "any",
+            "type": "exclude"
+          }
+        },
+        {
+          "id": "reduce",
+          "options": {
+            "reducers": [
+              "count"
+            ]
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "description": "Disponibilidade = % do tempo no ar desde que o sensor foi criado (cálculo do PRTG). Tempo para baixar a página inteira medido pelo PRTG. Não é ping.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Situação"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "Aviso": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Inoperante": {
+                        "color": "red",
+                        "index": 1
+                      },
+                      "OK": {
+                        "color": "green",
+                        "index": 0
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tempo de resposta (ms)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500
+                    },
+                    {
+                      "color": "red",
+                      "value": 2000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "displayName",
+                "value": "Tempo de carregamento HTTP (ms)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Disponibilidade (%)"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 99
+                    },
+                    {
+                      "color": "green",
+                      "value": 99.5
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 18,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Tempo de carregamento HTTP (ms)"
+          }
+        ]
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "device",
+              "text": "Portal",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "Situação",
+              "type": "string"
+            },
+            {
+              "selector": "lastvalue_raw",
+              "text": "Tempo de resposta (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "uptime_raw",
+              "text": "upraw",
+              "type": "number"
+            },
+            {
+              "selector": "group",
+              "text": "Grupo",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "upraw / 10000",
+              "text": "Disponibilidade (%)",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "sensors",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/table.json?content=sensors&columns=objid,device,status,lastvalue,uptime,group&filter_objid=5844&filter_objid=3941&filter_objid=4488&filter_objid=4560&filter_objid=5437&filter_objid=7516&filter_objid=7517&filter_objid=7518&filter_objid=7519&filter_objid=7520&filter_objid=7521&filter_objid=7522&filter_objid=7524&filter_objid=7525&filter_objid=7527&filter_objid=7529&count=100",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Situação dos portais",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "upraw": true
+            },
+            "indexByName": {
+              "Disponibilidade (%)": 3,
+              "Grupo": 4,
+              "Portal": 0,
+              "Situação": 1,
+              "Tempo de resposta (ms)": 2
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 0,
+        "y": 5
+      },
+      "id": 3,
+      "options": {
+        "content": "**Tempo de carregamento HTTP (ms)**: verde < 0,5 s, amarelo < 2 s, vermelho ≥ 2 s.\n\n**Disponibilidade**: meta sugerida 99,5% (≈ 3,6 h fora por mês).\n\nAo receber reclamação de lentidão, compare o horário com o gráfico abaixo.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "13.1.0",
+      "title": "Como ler",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "description": "Tempo para baixar a página inteira medido pelo PRTG. Não é ping.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisLabel": "Tempo de carregamento HTTP (ms)",
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "spanNulls": 3600000
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Site institucional",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5844&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "CMS",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "B",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=3941&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Aplicação 1",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "C",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=4488&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Aplicação 4",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "D",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=4560&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Aplicação 6",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "E",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5437&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 11",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "F",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7516&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Consulta pública",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "G",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7517&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 8 (homologação)",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "H",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7518&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 7",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "I",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7519&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 9",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "J",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7520&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 2",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "K",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7521&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 10",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "L",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7522&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 8",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "M",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7524&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Login externo",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "N",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7525&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 5",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "O",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7527&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 3",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "P",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7529&avg=900&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Tempo de carregamento HTTP (ms) — portais (média de 15 min)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "A Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "B Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "C Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "D Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "E Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "F Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "G Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "H Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "I Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "J Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "K Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "L Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "M Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "N Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "O Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "P Hora"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "exclude": {
+              "names": [
+                "A ts",
+                "B ts",
+                "C ts",
+                "D ts",
+                "E ts",
+                "F ts",
+                "G ts",
+                "H ts",
+                "I ts",
+                "J ts",
+                "K ts",
+                "L ts",
+                "M ts",
+                "N ts",
+                "O ts",
+                "P ts"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 5,
+      "panels": [],
+      "title": "Histórico — últimos 30 dias (um ponto por dia)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "description": "100% = o portal não ficou fora nenhum minuto no dia. Abaixo de 99,5% (linha tracejada) = mais de ~7 min fora no dia.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "always",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 99.5
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "sortBy": "Min",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "asc"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Downtime(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Site institucional",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5844&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Downtime(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "CMS",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "B",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=3941&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Downtime(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 1",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "C",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=4488&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Downtime(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 4",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "D",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=4560&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Downtime(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 6",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "E",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5437&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 11",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "F",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7516&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Consulta pública",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "G",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7517&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 8 (homologação)",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "H",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7518&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 7",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "I",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7519&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 9",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "J",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7520&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 2",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "K",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7521&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 10",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "L",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7522&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 8",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "M",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7524&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Login externo",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "N",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7525&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 5",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "O",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7527&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de inoperância(RAW)",
+              "text": "dt",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            },
+            {
+              "selector": "100 - dt",
+              "text": "Aplicação 3",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null && dt != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "P",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7529&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Disponibilidade diária por portal (%)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "A Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "B Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "C Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "D Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "E Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "F Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "G Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "H Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "I Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "J Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "K Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "L Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "M Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "N Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "O Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "P Hora"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "exclude": {
+              "names": [
+                "A ts",
+                "A dt",
+                "B ts",
+                "B dt",
+                "C ts",
+                "C dt",
+                "D ts",
+                "D dt",
+                "E ts",
+                "E dt",
+                "F ts",
+                "F dt",
+                "G ts",
+                "G dt",
+                "H ts",
+                "H dt",
+                "I ts",
+                "I dt",
+                "J ts",
+                "J dt",
+                "K ts",
+                "K dt",
+                "L ts",
+                "L dt",
+                "M ts",
+                "M dt",
+                "N ts",
+                "N dt",
+                "O ts",
+                "O dt",
+                "P ts",
+                "P dt"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "description": "Média de cada dia. Uma subida gradual indica que o servidor ou o banco está ficando mais lento. Tempo para baixar a página inteira medido pelo PRTG. Não é ping.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisLabel": "Tempo de carregamento HTTP (ms)",
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 10,
+              "type": "log"
+            },
+            "showPoints": "always",
+            "spanNulls": true
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Site institucional",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5844&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "CMS",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "B",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=3941&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Aplicação 1",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "C",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=4488&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Aplicação 4",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "D",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=4560&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Loading Time(RAW)",
+              "text": "Aplicação 6",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "E",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5437&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 11",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "F",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7516&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Consulta pública",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "G",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7517&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 8 (homologação)",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "H",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7518&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 7",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "I",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7519&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 9",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "J",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7520&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 2",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "K",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7521&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 10",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "L",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7522&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 8",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "M",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7524&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Login externo",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "N",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7525&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 5",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "O",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7527&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora(RAW)",
+              "text": "ts",
+              "type": "number"
+            },
+            {
+              "selector": "Tempo de carregamento(RAW)",
+              "text": "Aplicação 3",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [
+            {
+              "selector": "(ts - 25569) * 86400000 - 43200000",
+              "text": "Hora",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filterExpression": "ts != null",
+          "format": "table",
+          "parser": "backend",
+          "refId": "P",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7529&avg=86400&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "timeFrom": "30d",
+      "title": "Tempo de carregamento HTTP (ms) — média diária",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "A Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "B Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "C Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "D Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "E Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "F Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "G Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "H Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "I Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "J Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "K Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "L Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "M Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "N Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "O Hora"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "P Hora"
+              }
+            ]
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "exclude": {
+              "names": [
+                "A ts",
+                "B ts",
+                "C ts",
+                "D ts",
+                "E ts",
+                "F ts",
+                "G ts",
+                "H ts",
+                "I ts",
+                "J ts",
+                "K ts",
+                "L ts",
+                "M ts",
+                "N ts",
+                "O ts",
+                "P ts"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "description": "Último ping (PRTG) dos mesmos servidores dos portais.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ping (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 50
+                    },
+                    {
+                      "color": "red",
+                      "value": 200
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "objid",
+              "text": "ID",
+              "type": "number"
+            },
+            {
+              "selector": "device",
+              "text": "Alvo",
+              "type": "string"
+            },
+            {
+              "selector": "name",
+              "text": "Sensor",
+              "type": "string"
+            },
+            {
+              "selector": "lastvalue_raw",
+              "text": "Ping (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "status",
+              "text": "Situação",
+              "type": "string"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "sensors",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/table.json?content=sensors&columns=objid,device,name,lastvalue_raw,status&filter_objid=4490&filter_objid=4547&filter_objid=3539&filter_objid=4548&filter_objid=5432&filter_objid=3937&count=100",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Ping (ms) — mesmo alvo",
+      "type": "table"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 42,
+  "tags": [
+    "demo"
+  ],
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "title": "Demo - Serviços ao público",
+  "uid": "demo-servicos",
+  "version": null
+}

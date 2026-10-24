@@ -1,0 +1,1458 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 6,
+      "title": "🌐 WAN (Links de Internet)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 21,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "simple",
+          "refId": "A",
+          "root_selector": "histdata",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/historicdata.json?id=7411&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "simple",
+          "refId": "B",
+          "root_selector": "histdata",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/historicdata.json?id=7407&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Tráfego de Internet (Principal e Backup)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "DD/MM/YYYY HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "datetime"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "datetime",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Link Principal",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "value_raw A"
+                }
+              },
+              "operator": "*",
+              "right": {
+                "fixed": "8"
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Link Backup",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "value_raw B"
+                }
+              },
+              "operator": "*",
+              "right": {
+                "fixed": "8"
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "coverage A": true,
+              "coverage B": true,
+              "coverage_raw A": true,
+              "coverage_raw B": true,
+              "datetime": false,
+              "datetime_raw A": true,
+              "datetime_raw B": true,
+              "value A": true,
+              "value B": true,
+              "value_raw A": true,
+              "value_raw B": true
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "value_raw B": ""
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 7,
+      "title": "🏢 LAN (Interfaces Físicas)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 21,
+        "x": 0,
+        "y": 11
+      },
+      "id": 3,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(042) ae1 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5684&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(043) ae2 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "B",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5685&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Tráfego LAN (Agregações Físicas)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "DD/MM/YYYY HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "datetime"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(042) ae1 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(043) ae2 Traffic"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "A (042) ae1 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "B (043) ae2 Traffic"
+              }
+            ],
+            "match": "any",
+            "type": "include"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "(045) ae1.2000 Traffic",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byType",
+                  "options": "number"
+                }
+              },
+              "operator": "*",
+              "right": {
+                "fixed": "8"
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 8,
+      "title": "🔀 VLAN (Redes Virtuais)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 21,
+        "x": 0,
+        "y": 21
+      },
+      "id": 4,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(045) ae1.2000 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5687&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(046) ae1.400 Traffic",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "B",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5688&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(047) ae1.500 Traffic",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "C",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5689&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(048) ae1.700 Traffic",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "D",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5690&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(049) ae1.304 Traffic",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "E",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5691&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(050) ae2.2 Traffic",
+              "type": "string"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "F",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5692&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Tráfego VLANs Internas",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "DD/MM/YYYY HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "datetime"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(045) ae1.2000 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(046) ae1.400 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(047) ae1.500 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(048) ae1.700 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(049) ae1.304 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(050) ae2.2 Traffic"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "A (045) ae1.2000 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "B (046) ae1.400 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "C (047) ae1.500 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "D (048) ae1.700 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "E (049) ae1.304 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "F (050) ae2.2 Traffic"
+              }
+            ],
+            "match": "any",
+            "type": "include"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "(045) ae1.2000 Traffic",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byType",
+                  "options": "number"
+                }
+              },
+              "operator": "*",
+              "right": {
+                "fixed": "8"
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 9,
+      "title": "🔐 VPNs (Túneis de Conexão)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 22,
+        "x": 0,
+        "y": 31
+      },
+      "id": 5,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "enableFacetedFilter": false,
+          "overflow": "ellipsis",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(040) SSL VPN interface Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5683&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Tráfego total (velocidade)(RAW)",
+              "text": "(041) VPN-Fornecedor-A Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "B",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7397&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Traffic Total (velocidade)(RAW)",
+              "text": "(055) VPN-Filial-01 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "C",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=5696&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Tráfego total (velocidade)(RAW)",
+              "text": "(056) VPN-Filial-02 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "D",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7409&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Tráfego total (velocidade)(RAW)",
+              "text": "(058) VPN-Parceiro-01 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "E",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7410&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Tráfego total (velocidade)(RAW)",
+              "text": "(061) VPN-Filial-03 Traffic",
+              "type": "number"
+            }
+          ],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "F",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7412&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Tráfego total (velocidade)(RAW)",
+              "text": "(062) VPN-Cliente Traffic",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "G",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7418&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Data e hora",
+              "text": "datetime",
+              "type": "string"
+            },
+            {
+              "selector": "Tráfego total (velocidade)(RAW)",
+              "text": "(063) VPN-Parceiro-02 Traffic",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "H",
+          "root_selector": "",
+          "source": "url",
+          "type": "csv",
+          "url": "http://topologia:8090/prtg/api/historicdata.csv?id=7419&avg=0&sdate=${__from:date:YYYY-MM-DD-HH-mm-ss}&edate=${__to:date:YYYY-MM-DD-HH-mm-ss}",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Tráfego de VPNs (Filiais e Clientes)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "DD/MM/YYYY HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "datetime"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(055) VPN-Filial-01 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(046) ae1.400 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(047) ae1.500 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(048) ae1.700 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(049) ae1.304 Traffic"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "(050) ae2.2 Traffic"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "A (040) SSL VPN interface Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "B (041) VPN-Fornecedor-A Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "C (055) VPN-Filial-01 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "D (056) VPN-Filial-02 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "E (058) VPN-Parceiro-01 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "F (061) VPN-Filial-03 Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "G (062) VPN-Cliente Traffic"
+              },
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "H (063) VPN-Parceiro-02 Traffic"
+              }
+            ],
+            "match": "any",
+            "type": "include"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "(045) ae1.2000 Traffic",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byType",
+                  "options": "number"
+                }
+              },
+              "operator": "*",
+              "right": {
+                "fixed": "8"
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 42,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Demo - Firewall: tráfego (WAN, LAN, VLAN, VPN)",
+  "uid": "demo-fortigate",
+  "version": null,
+  "tags": [
+    "demo"
+  ]
+}

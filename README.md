@@ -69,6 +69,18 @@ Detalhes, fórmulas e como rodar: [v2-topologia-viva/README.md](v2-topologia-viv
 * **Concorrência no PRTG:** muitas consultas simultâneas à API (vários painéis abertos) fazem o PRTG responder 401/400 de forma intermitente, mesmo com a chave certa. A V2 resolve com uma fila de 4 consultas em paralelo, novas tentativas e cache.
 * **`localhost` x `127.0.0.1` no Windows:** `localhost` pode resolver para IPv6 (`::1`) e a conexão é recusada se o serviço só escuta IPv4. Nas URLs do Grafana, use `127.0.0.1`.
 
+## 📊 Painéis do Grafana (modo demonstração)
+Prints com dados fictícios, gerados pelo modo demonstração da V2. Os painéis em JSON estão em [`v2-topologia-viva/deploy/grafana/demo/`](v2-topologia-viva/deploy/grafana/demo/).
+
+**NOC:** contadores por estado e lista do que está em erro ou aviso.
+![Grafana NOC](docs/prints/grafana_noc.png)
+
+**Serviços ao público:** situação, tempo de carregamento e disponibilidade diária de cada portal.
+![Grafana Serviços ao público](docs/prints/grafana_servicos.png)
+
+**Firewall:** tráfego dos links de internet, LAN, VLANs e VPNs.
+![Grafana Firewall](docs/prints/grafana_firewall.png)
+
 ## 📸 Screenshots
 <img width="1598" height="763" alt="Painel-1" src="https://github.com/user-attachments/assets/0ff30b46-8ca3-4902-b4b6-813eb599ba60" />
 <img width="1663" height="834" alt="Painel-2" src="https://github.com/user-attachments/assets/61d13062-c4bd-4a4e-9e70-b5d1e4d73684" />

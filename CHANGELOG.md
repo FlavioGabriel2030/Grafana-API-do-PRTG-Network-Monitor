@@ -7,6 +7,7 @@
 - **Fluxo:** cor e velocidade pela mesma escala logarítmica de tempo de resposta; barra de informações fixa; lista "Ocorrências em aberto" filtrada.
 - **Sincronização:** telas recarregam sozinhas quando o servidor muda de versão ou o login expira; aviso de dados atrasados.
 - **Modo demonstração** (`TOPO_DEMO=1`) com dados fictícios e prints em `docs/prints/`.
+- **Painéis do Grafana em modo demonstração** (NOC, Serviços ao público, Firewall), com prints e JSON para importar.
 - **Operação:** vigia que reinicia o servidor; deploy com `docker compose`.
 
 ## V1 (julho/2026)

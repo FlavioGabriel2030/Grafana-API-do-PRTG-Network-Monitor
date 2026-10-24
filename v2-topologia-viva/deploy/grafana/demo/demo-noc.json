@@ -1,0 +1,575 @@
+{
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "noValue": "0"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "UpSens",
+              "text": "OK",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/status.json",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "OK",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "noValue": "0"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "WarnSens",
+              "text": "Aviso",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/status.json",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Aviso",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "noValue": "0"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Alarms",
+              "text": "Erro",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/status.json",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Erro",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "noValue": "0"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "AckAlarms",
+              "text": "Erro confirmado",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/status.json",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Erro confirmado",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
+          },
+          "noValue": "0"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "UnusualSens",
+              "text": "Incomum",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/status.json",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Incomum",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "noValue": "0"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "PausedSens",
+              "text": "Pausado",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/status.json",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Pausado",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "prtg-demo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "footer": {
+              "reducers": [
+                "count"
+              ]
+            },
+            "hideFrom": {
+              "viz": false
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mensagem"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 650
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "Aviso": {
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "Inoperante": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Inoperante (confirmado)": {
+                        "color": "orange",
+                        "index": 2
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Status"
+          }
+        ]
+      },
+      "pluginVersion": "13.1.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "group",
+              "text": "Grupo",
+              "type": "string"
+            },
+            {
+              "selector": "device",
+              "text": "Device",
+              "type": "string"
+            },
+            {
+              "selector": "sensor",
+              "text": "Sensor",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "string"
+            },
+            {
+              "selector": "lastvalue",
+              "text": "Último valor",
+              "type": "string"
+            },
+            {
+              "selector": "downtimesince",
+              "text": "Fora há",
+              "type": "string"
+            },
+            {
+              "selector": "message_raw",
+              "text": "Mensagem",
+              "type": "string"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "prtg-demo"
+          },
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "sensors",
+          "source": "url",
+          "type": "json",
+          "url": "http://topologia:8090/prtg/api/table.json?content=sensors&columns=group,device,sensor,status,lastvalue,downtimesince,message&filter_status=5&filter_status=4&count=1000&sortby=status",
+          "url_options": {
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Em erro e em aviso (avisos de SSL/TLS ficam no painel de Certificados)",
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": "Aviso"
+                  }
+                },
+                "fieldName": "Status"
+              },
+              {
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": ".*SSL.*"
+                  }
+                },
+                "fieldName": "Sensor"
+              }
+            ],
+            "match": "all",
+            "type": "exclude"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Device": 2,
+              "Fora há": 5,
+              "Grupo": 1,
+              "Mensagem": 6,
+              "Sensor": 3,
+              "Status": 0,
+              "Último valor": 4
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 42,
+  "tags": [
+    "demo"
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "Demo - NOC",
+  "uid": "demo-noc",
+  "version": null
+}
