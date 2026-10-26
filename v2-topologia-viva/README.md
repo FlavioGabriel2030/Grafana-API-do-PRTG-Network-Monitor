@@ -33,6 +33,18 @@ PRTG ──(a cada 60 s)──> servidor.py ──(/api/snapshot a cada 20 s)─
 - **Telas sempre sincronizadas:** a resposta do servidor carrega uma `versao` (data dos arquivos). Se alguém editar uma tela, todas as TVs abertas recarregam sozinhas. Se o login expirar, a tela pede de novo em vez de congelar; dados com mais de 3 ciclos ficam marcados como "⚠ dados atrasados".
 - **Vigia (`vigia.pyw`):** roda sem janela, confere o servidor a cada 10 s e reinicia se ele cair ou parar de responder por 30 s.
 
+## Cache e fila do intermediário (Grafana → PRTG)
+Feito em Python puro (`threading`, `urllib`), em memória, dentro do `servidor.py`. Cada consulta passa por 4 camadas:
+
+| Camada | O que faz | Valores |
+|---|---|---|
+| Cache | guarda a resposta pela consulta completa (sem a chave da API) | `historicdata`: 300 s · resto: 30 s · máx. 800 itens (apaga os 200 mais antigos) |
+| Agrupamento | consultas idênticas ao mesmo tempo viram uma só ao PRTG | as outras esperam e recebem a mesma resposta |
+| Fila | limita as consultas simultâneas ao PRTG | 4 (`TOPO_PROXY_PARALELO`) |
+| Novas tentativas | repete em 400, 401, 429, 5xx e timeout | 3 tentativas: 0,5 s · 1,5 s · 3 s |
+
+Se o PRTG falhar de vez, entrega a **última resposta boa**, mesmo vencida. Estatísticas em `/prtg/_status` (consultas, acertos no cache, tentativas e falhas). O cache recomeça vazio quando o servidor reinicia.
+
 ## Visão de fora e visão de dentro
 - **De fora** (padrão): usuário na internet → links → firewall → balanceador → serviços → dados.
 - **De dentro** (`?visao=dentro`, na Topologia e no Fluxo): funcionário → switches de acesso → núcleo (com virtualização e backup) → firewall entre VLANs e DNS interno → balanceador ou saída para a internet → sistemas → dados.
