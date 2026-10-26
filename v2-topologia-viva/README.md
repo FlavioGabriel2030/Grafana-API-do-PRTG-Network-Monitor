@@ -41,7 +41,27 @@ PRTG ──(a cada 60 s)──> servidor.py ──(/api/snapshot a cada 20 s)─
 
 ## Regras visuais do Fluxo
 - **Cor = velocidade**, escala logarítmica: `t = (ln(ms) − ln 30) / (ln 300 − ln 30)`, limitada a [0, 1]. 30 ms ou menos é ciano (rápido), cerca de 95 ms é verde (normal), 300 ms ou mais é amarelo (lento). Logarítmica porque dobrar de 20→40 ms pesa tanto quanto de 200→400 ms.
-- **A velocidade da bolinha sai da mesma decisão da cor**, em pixels por segundo (240 rápido → 60 lento), sem depender do comprimento do trecho. Aviso conta como lento: amarelo nunca corre mais que ciano.
+- **A velocidade da bolinha sai da mesma decisão da cor**, em pixels por segundo, sem depender do comprimento do trecho. Aviso conta como lento: amarelo nunca corre mais que ciano.
+
+  ```
+  nível      = (ln(ms) − ln 30) / (ln 300 − ln 30)      limitado entre 0 e 1
+  velocidade = 240 − 180 × nível                         px/s numa tela de 1900 px (proporcional à largura)
+  ```
+
+  | Tempo de resposta | Nível | Velocidade | Cor |
+  |---|---|---|---|
+  | até **30 ms** (1, 2, 4… ms) | 0 | **240 px/s** (teto) | ciano |
+  | 50 ms | 0,22 | 200 px/s | ciano esverdeado |
+  | **95 ms** | 0,50 | 150 px/s | verde |
+  | 150 ms | 0,70 | 114 px/s | verde amarelado |
+  | **300 ms ou mais** | 1 | **60 px/s** (piso) | amarelo |
+  | aviso / hipótese no destino | 1 | 60 px/s | amarelo |
+  | pausado | 0,8 | 96 px/s | azul |
+
+  - **Teto em 30 ms:** abaixo disso a diferença não é perceptível para quem usa o sistema; sem teto, pings de 0–1 ms virariam riscos impossíveis de acompanhar.
+  - **Piso em 300 ms:** acima disso tudo já é "lento"; a bolinha não para, porque parar é reservado para queda (vermelho, travando no meio do trecho).
+  - **Logarítmica:** dobrar o tempo pesa igual em qualquer faixa (30→60 ms vale o mesmo que 150→300 ms), que é como a lentidão é percebida.
+  - **Tamanho** da bolinha = tráfego do trecho (links); **quantidade** de bolinhas numa rota = tráfego medido no link.
 - **Tempo = mediana das 3 últimas medições** (robôs e sensores HTTP): o servidor busca o histórico curto a cada coleta. Um pico isolado não muda a cor; aparece só como nota no cartão ("última: 593 ms (pico)"). Queda e alerta vêm direto do status do PRTG, sem esperar a mediana.
 - **Tempo por item:** usa o sensor principal; se não houver, o menor tempo HTTP, e só por último o ping (mostrado como "ping X ms").
 - **Ocorrências em aberto:** sensores em Aviso, Fora do ar, Fora (reconhecido) ou Parcial. "Incomum" fica de fora (é só desvio estatístico), avisos de SSL viram uma linha só e os itens listados em `conhecidos` viram um resumo.
