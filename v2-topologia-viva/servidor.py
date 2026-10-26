@@ -235,6 +235,43 @@ def versao_telas():
         return ''
 
 
+TIPOS_TEMPO = ('http', 'httpadvanced')  # robôs e sensores HTTP: os que medem tempo de carregamento
+
+
+def ultimas_medicoes(sid, n=3):
+    """Últimas n medições (canal principal, em ms) de um sensor, pelo histórico bruto dos últimos 40 min."""
+    agora = time.localtime()  # o PRTG lê horário LOCAL
+    f = lambda t: time.strftime('%Y-%m-%d-%H-%M-%S', t)
+    st, _, corpo = prtg_bruto(f'/api/historicdata.csv?id={sid}&avg=0&sdate={f(time.localtime(time.time() - 2400))}&edate={f(agora)}', timeout=30)
+    if st != 200:
+        return []
+    linhas = list(csv.reader(corpo.decode('utf-8', 'replace').splitlines()))
+    if not linhas:
+        return []
+    cab = linhas[0]  # coluna do tempo pelo nome; sem ela, o canal principal (4ª coluna)
+    col = next((i for i, c in enumerate(cab) if re.match(r'(Tempo de carregamento|Loading Time|Tempo de resposta|Response Time)\(RAW\)$', c)), 3)
+    vals = []
+    for linha in linhas[1:]:
+        if len(linha) > col and linha[1]:  # a última linha ("Médias") não tem data RAW
+            try:
+                vals.append(float(linha[col]))
+            except ValueError:
+                pass
+    return vals[-n:]
+
+
+def suavizar(sensores, config):
+    """Para a TV: tempo = mediana das 3 últimas medições (um pico isolado não muda a cor).
+    Queda e alerta continuam imediatos: vêm do status do PRTG, que não passa por aqui."""
+    ids = {i for n in config.get('nos', []) for i in n.get('sensores', []) + [j for it in n.get('itens', []) for j in it.get('sensores', [])]}
+    alvo = [s for s in sensores if s['id'] in ids and s['tipo'] in TIPOS_TEMPO and s['st'] in (3, 4, 10)]
+    with ThreadPoolExecutor(4) as ex:
+        for s, vals in zip(alvo, ex.map(lambda s: ultimas_medicoes(s['id']), alvo)):
+            if vals:
+                s['med'] = sorted(vals)[len(vals) // 2]
+                s['ult'] = vals[-1]
+
+
 def coletar():
     config = carregar_config()
     grupos = [{'id': g['objid'], 'nome': g['name'], 'pai': g['parentid'], 'pos': g.get('position_raw', 0)}
@@ -249,12 +286,16 @@ def coletar():
     devices = []
     for d, ip in zip(devs, ips):
         ent = ipam.get(ip)
-        diverge = bool(ent and tokens(ent['nome'] + ' ' + ent['desc']) and not (tokens(ent['nome'] + ' ' + ent['desc']) & tokens(d['name'] + ' ' + d['host'])))
+        diverge = False  # o nome do PRTG é a referência; o phpIPAM entra só com descrição e sub-rede
         devices.append({'id': d['objid'], 'nome': d['name'], 'host': d['host'], 'ip': ip, 'pai': d['parentid'], 'st': d['status_raw'],
                         'tags': d['tags'], 'pos': d.get('position_raw', 0), 'ipam': ent, 'diverge': diverge})
     sensores = [{'id': s['objid'], 'dev': s['parentid'], 'nome': s['name'], 'st': s['status_raw'], 'msg': s['message_raw'],
                  'val': s['lastvalue'], 'raw': s.get('lastvalue_raw'), 'pri': s['priority_raw'], 'tags': s['tags'], 'tipo': s['type_raw']}
                 for s in sens]
+    try:
+        suavizar(sensores, config)
+    except Exception as e:  # sem mediana, a tela usa o último valor
+        log.warning('mediana dos tempos falhou: %s', e)
     # conferência: cada sensor citado no config existe? em qual device?
     por_id = {s['id']: s for s in sensores}
     dev_id = {d['id']: d for d in devices}

@@ -8,6 +8,9 @@
 - **Sincronização:** telas recarregam sozinhas quando o servidor muda de versão ou o login expira; aviso de dados atrasados.
 - **Modo demonstração** (`TOPO_DEMO=1`) com dados fictícios e prints em `docs/prints/`.
 - **Painéis do Grafana em modo demonstração** (NOC, Serviços ao público, Firewall), com prints e JSON para importar.
+- **Visão de dentro** (`?visao=dentro`) na Topologia e no Fluxo; playlist alterna fora → dentro → mosaico.
+- **Tempo pela mediana das 3 últimas medições**, com nota de pico no cartão.
+- **Estrutura das pastas** no README.
 - **Operação:** vigia que reinicia o servidor; deploy com `docker compose`.
 
 ## V1 (julho/2026)

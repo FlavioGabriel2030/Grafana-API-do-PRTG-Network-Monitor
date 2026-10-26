@@ -439,5 +439,282 @@
       "nome": "NOC",
       "caminho": "/d/prtg-noc"
     }
-  ]
+  ],
+  "dentro": {
+    "_ajuda": "Visão de quem está DENTRO da rede: os mesmos nós em outras camadas e ligações. Abra com ?visao=dentro.",
+    "camadas": [
+      "Funcionário",
+      "Acesso",
+      "Núcleo e infraestrutura",
+      "Firewall e DNS",
+      "F5 / saída",
+      "Sistemas",
+      "Aplicação e dados"
+    ],
+    "nos": {
+      "vpn": {
+        "camada": 0,
+        "sub": "funcionário remoto"
+      },
+      "core1": {
+        "camada": 2
+      },
+      "core2": {
+        "camada": 2
+      },
+      "virtual": {
+        "camada": 2
+      },
+      "backup": {
+        "camada": 2
+      },
+      "integradores": {
+        "camada": 2
+      },
+      "fortigate": {
+        "camada": 3,
+        "sub": "firewall entre as VLANs"
+      },
+      "dns": {
+        "camada": 3,
+        "sub": "1º passo: \"onde fica o sistema?\""
+      },
+      "f5": {
+        "camada": 4,
+        "sub": "quando o DNS interno aponta para o VIP"
+      },
+      "link_principal": {
+        "camada": 4,
+        "sub": "saída para sites de fora"
+      },
+      "site": {
+        "camada": 5
+      },
+      "consulta": {
+        "camada": 5
+      },
+      "osticket": {
+        "camada": 5
+      },
+      "normativos": {
+        "camada": 5
+      },
+      "plenaria": {
+        "camada": 5
+      },
+      "ged": {
+        "camada": 5
+      },
+      "sic": {
+        "camada": 5
+      },
+      "soea": {
+        "camada": 5
+      },
+      "cpa": {
+        "camada": 5
+      },
+      "fiscalizacao": {
+        "camada": 5
+      },
+      "sei": {
+        "camada": 5
+      },
+      "drupal": {
+        "camada": 6
+      },
+      "banco_soea": {
+        "camada": 6
+      },
+      "lai": {
+        "camada": 6
+      },
+      "bancos": {
+        "camada": 6
+      }
+    },
+    "novos": [
+      {
+        "id": "funcionario",
+        "rotulo": "Funcionário",
+        "sub": "PC na rede interna",
+        "camada": 0,
+        "fixo": true
+      },
+      {
+        "id": "switches",
+        "rotulo": "Switches de acesso",
+        "sub": "switches dos andares",
+        "camada": 1,
+        "fixo": true
+      }
+    ],
+    "ligacoes": [
+      [
+        "funcionario",
+        "switches",
+        "rede"
+      ],
+      [
+        "switches",
+        "core1",
+        "rede"
+      ],
+      [
+        "switches",
+        "core2",
+        "rede"
+      ],
+      [
+        "vpn",
+        "fortigate",
+        "rede"
+      ],
+      [
+        "core1",
+        "dns",
+        "rede"
+      ],
+      [
+        "core1",
+        "fortigate",
+        "rede"
+      ],
+      [
+        "core2",
+        "fortigate",
+        "rede"
+      ],
+      [
+        "fortigate",
+        "f5",
+        "rede"
+      ],
+      [
+        "fortigate",
+        "link_principal",
+        "rede"
+      ],
+      [
+        "link_principal",
+        "sei",
+        "externo"
+      ],
+      [
+        "fortigate",
+        "osticket",
+        "rede"
+      ],
+      [
+        "core1",
+        "virtual",
+        "rede"
+      ],
+      [
+        "core1",
+        "backup",
+        "rede"
+      ],
+      [
+        "core2",
+        "integradores",
+        "rede"
+      ],
+      [
+        "f5",
+        "site",
+        "rede"
+      ],
+      [
+        "f5",
+        "consulta",
+        "rede"
+      ],
+      [
+        "f5",
+        "normativos",
+        "rede"
+      ],
+      [
+        "f5",
+        "plenaria",
+        "rede"
+      ],
+      [
+        "f5",
+        "ged",
+        "rede"
+      ],
+      [
+        "f5",
+        "sic",
+        "rede"
+      ],
+      [
+        "f5",
+        "soea",
+        "rede"
+      ],
+      [
+        "f5",
+        "cpa",
+        "rede"
+      ],
+      [
+        "f5",
+        "fiscalizacao",
+        "rede"
+      ],
+      [
+        "site",
+        "bancos",
+        "rede"
+      ],
+      [
+        "consulta",
+        "bancos",
+        "rede"
+      ],
+      [
+        "ged",
+        "bancos",
+        "rede"
+      ],
+      [
+        "sic",
+        "bancos",
+        "hipotese"
+      ],
+      [
+        "site",
+        "drupal",
+        "rede"
+      ],
+      [
+        "normativos",
+        "drupal",
+        "rede"
+      ],
+      [
+        "soea",
+        "banco_soea",
+        "rede"
+      ],
+      [
+        "cpa",
+        "banco_soea",
+        "rede"
+      ],
+      [
+        "fiscalizacao",
+        "bancos",
+        "rede"
+      ],
+      [
+        "ged",
+        "lai",
+        "rede"
+      ]
+    ]
+  }
 }

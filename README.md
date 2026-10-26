@@ -1,5 +1,36 @@
 # 📊 Integração Avançada: Grafana + API do PRTG Network Monitor
 
+## 📁 Estrutura das pastas
+```
+.
+├── README.md                     ← este arquivo (visão geral)
+├── CHANGELOG.md                  ← histórico de mudanças
+├── docs/
+│   └── prints/                   ← prints e GIF usados nos READMEs (modo demonstração, dados fictícios)
+├── v1-script-python-db/          ← V1 (descontinuada): extrator Python + SQLite
+│   ├── extrator_prtg.py
+│   ├── .env.example
+│   └── README.md
+└── v2-topologia-viva/            ← V2: servidor + telas de NOC + deploy
+    ├── servidor.py               ← lê o PRTG, entrega as telas e o intermediário com fila/cache para o Grafana
+    ├── demo.py                   ← modo demonstração (TOPO_DEMO=1): finge ser o PRTG com dados fictícios
+    ├── vigia.pyw                 ← reinicia o servidor se ele cair (Windows, sem janela)
+    ├── index.html                ← Topologia (visão de fora e de dentro)
+    ├── fluxo.html                ← Fluxo animado para TV
+    ├── mosaico.html              ← Mosaico (colmeia) para TV
+    ├── config.exemplo.json       ← modelo: copie para config.json e coloque os IDs dos seus sensores
+    ├── Dockerfile
+    ├── README.md                 ← como rodar, regras visuais, config.json
+    └── deploy/
+        ├── docker-compose.yml    ← Grafana + Topologia
+        ├── .env.example          ← modelo das variáveis (o .env real nunca vai para o Git)
+        └── grafana/
+            ├── provisioning/     ← fonte de dados e pasta de painéis criadas automaticamente
+            ├── dashboards/       ← coloque aqui os painéis exportados do seu Grafana
+            └── demo/             ← painéis de demonstração (NOC, Serviços, Firewall) para importar
+```
+Ficam **fora** do Git (`.gitignore`): `config.json`, `acesso.txt`, `.env` e logs, porque contêm dados da sua rede.
+
 ## 🎯 Objetivo do Projeto
 Este projeto documenta a construção de dashboards dinâmicos no Grafana utilizando dados extraídos diretamente da API do PRTG Network Monitor, sem a necessidade de bancos de dados intermediários. O foco principal foi contornar as limitações nativas de formatação e realizar cálculos matemáticos de tráfego de rede (VLANs, VPNs e Firewalls) em tempo real.
 
@@ -59,6 +90,8 @@ Durante o desenvolvimento, mapeamos e resolvemos "armadilhas" comuns dessa integ
 A pasta [`v2-topologia-viva`](v2-topologia-viva/) traz a evolução do projeto:
 * **Intermediário com fila e cache** entre o Grafana e o PRTG, que elimina os erros intermitentes (401/400) quando vários painéis consultam ao mesmo tempo.
 * **Telas para TV** que não precisam de clique: Topologia, **Fluxo** (animação do tráfego, com cor e velocidade pelo tempo de resposta) e **Mosaico**, com playlist automática.
+* **Visão de fora e visão de dentro:** o caminho de quem vem da internet e o de quem está na rede interna (switches → núcleo → firewall/DNS → sistemas).
+* **Tempo pela mediana das 3 últimas medições:** um pico isolado não pinta a tela de amarelo; queda e alerta continuam imediatos.
 * **Lista de ocorrências em aberto** filtrada (sem "Incomum", SSL agrupado, problemas conhecidos à parte).
 * Sincronização automática das TVs, vigia que reinicia o servidor e **deploy em container** (`docker compose`).
 

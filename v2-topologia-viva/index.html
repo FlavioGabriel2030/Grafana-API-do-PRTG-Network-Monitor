@@ -168,6 +168,8 @@ td.mono{font-family:var(--mono)}
 .sn .k{font-size:12px;color:var(--known);margin-top:3px}
 .sn a{font:11px var(--mono)}
 iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line);border-radius:10px;background:#fff}
+.visao-btn{font:600 12px var(--mono,monospace);border:1px solid var(--line);border-radius:99px;padding:2px 10px;text-decoration:none;color:inherit;vertical-align:middle}
+.visao-btn:hover{border-color:currentColor}
 </style>
 </head>
 <body>
@@ -189,8 +191,9 @@ iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line
     <button role="tab" data-t="ach" aria-selected="false">Achados</button>
     <span class="telas">Telas da TV:
       <a href="/fluxo" target="_blank" rel="noopener">🌊 Fluxo</a>
+      <a href="/fluxo?visao=dentro" target="_blank" rel="noopener" title="Fluxo na visão de quem está dentro da rede">🏢 Fluxo (dentro)</a>
       <a href="/mosaico" target="_blank" rel="noopener">⬢ Mosaico</a>
-      <a href="/fluxo?playlist" target="_blank" rel="noopener" title="Alterna Fluxo e Mosaico a cada 2 min">▶ Playlist</a>
+      <a href="/fluxo?playlist" target="_blank" rel="noopener" title="Alterna Fluxo (fora), Fluxo (dentro) e Mosaico a cada 2 min">▶ Playlist</a>
     </span>
   </nav>
 </header>
@@ -201,7 +204,7 @@ iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line
   <section class="sec" id="sec-mapa">
     <div class="stack">
       <div class="card">
-        <h2>Caminho do usuário até os serviços <small>passe o mouse ou toque para ver o caminho · clique para detalhes · Esc limpa</small></h2>
+        <h2><span id="tituloMapa">Caminho do usuário até os serviços</span> <a id="trocaVisao" class="visao-btn"></a> <small>passe o mouse ou toque para ver o caminho · clique para detalhes · Esc limpa</small></h2>
         <div id="mapa"><svg id="fios" aria-hidden="true"></svg><div class="camadas" id="camadas"></div><div class="obs" id="obs"></div></div>
         <div class="legend">
           <span><i></i>rede (segue o DNS interno)</span>
@@ -235,7 +238,7 @@ iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line
     <div class="card">
       <div class="tools">
         <input id="busca" type="search" placeholder="Buscar device, IP, sensor, tag ou nome no phpIPAM…" aria-label="Buscar">
-        <select id="fSt" aria-label="Filtro"><option value="">Todos</option><option value="prob">Só com problema</option><option value="pausado">Só pausados</option><option value="diverge">Nome diferente do phpIPAM</option></select>
+        <select id="fSt" aria-label="Filtro"><option value="">Todos</option><option value="prob">Só com problema</option><option value="pausado">Só pausados</option></select>
         <button class="chip" id="abrirTodos" type="button">Abrir todos</button>
       </div>
       <div id="inv"></div>
@@ -248,8 +251,6 @@ iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line
       <div class="resumo" id="cResumo"></div>
       <div class="sub-h">Sensores usados no mapa</div>
       <div class="tbl"><table id="cMapa"></table></div>
-      <div class="sub-h">Devices com nome diferente no phpIPAM</div>
-      <div class="tbl"><table id="cIpam"></table></div>
     </div>
   </section>
 
@@ -260,6 +261,15 @@ iframe.achados{width:100%;height:calc(100vh - 150px);border:1px solid var(--line
 
 <script>
 'use strict';
+/* Visão de fora (padrão) ou de dentro (?visao=dentro): mesmos nós e sensores, outras camadas e ligações (config.dentro). */
+const VISAO=new URLSearchParams(location.search).get('visao')==='dentro'?'dentro':'fora';
+function aplicarVisao(C){
+  if(VISAO!=='dentro'||!C.dentro) return C;
+  const V=C.dentro, base=new Map(C.nos.map(n=>[n.id,n]));
+  const nos=Object.entries(V.nos||{}).map(([id,o])=>base.has(id)?Object.assign({},base.get(id),o):null).filter(Boolean).concat(V.novos||[]);
+  nos.sort((a,b)=>a.camada-b.camada);
+  return Object.assign({},C,{camadas:V.camadas,nos,ligacoes:V.ligacoes});
+}
 const ST={3:['OK','--ok',1],4:['Aviso','--warn',4],5:['Fora','--bad',6],14:['Fora parcial','--bad',6],13:['Fora (reconhecido)','--bad',5],10:['Incomum','--unusual',3],1:['Desconhecido','--unknown',2],2:['Coletando','--unknown',2],6:['Nenhum','--unknown',0],7:['Pausado','--paused',0],8:['Pausado','--paused',0],9:['Pausado','--paused',0],11:['Pausado','--paused',0],12:['Pausado','--paused',0]};
 const st=c=>ST[c]||['?','--unknown',2];
 const cor=c=>`var(${st(c)[1]})`;
@@ -455,10 +465,10 @@ function inventario(){
 // ---------- conferência
 function conferencia(){
   const c=D.conferencia||[], falt=c.filter(x=>!x.existe), div=D.devices.filter(d=>d.diverge), semIpam=D.devices.filter(d=>d.ip&&!d.ipam).length;
-  $('tNconf').textContent=falt.length+div.length||'';
-  $('cResumo').innerHTML=[[c.length,'sensores do mapa conferidos'],[falt.length,'não existem mais no PRTG'],[div.length,'devices com nome diferente no phpIPAM'],[D.ipamTotal,'IPs de servidor no phpIPAM']].map(([v,t])=>`<div class="kpi"><b>${v}</b><span>${esc(t)}</span></div>`).join('');
+  $('tNconf').textContent=falt.length||'';
+  $('cResumo').innerHTML=[[c.length,'sensores do mapa conferidos'],[falt.length,'não existem mais no PRTG'],[D.ipamTotal,'IPs de servidor no phpIPAM']].map(([v,t])=>`<div class="kpi"><b>${v}</b><span>${esc(t)}</span></div>`).join('');
   $('cMapa').innerHTML='<thead><tr><th>Caixa</th><th>Sensor</th><th>Device no PRTG</th><th>IP</th><th>phpIPAM</th><th>Status</th></tr></thead><tbody>'+c.map(x=>`<tr><td><button type="button" class="chip" data-no="${esc(x.no)}">${esc(x.rotulo)}</button></td><td class="mono">${x.sensor??''} ${esc(x.nome)}</td><td>${esc(x.device)}</td><td class="mono">${esc(x.ip)}</td><td class="mono">${esc(x.ipam)}</td><td>${x.existe?`<span class="tag" style="color:${cor(x.st)}">${esc(st(x.st)[0])}</span>`:'<span class="tag bad">não existe</span>'}</td></tr>`).join('')+'</tbody>';
-  $('cIpam').innerHTML='<thead><tr><th>IP</th><th>PRTG</th><th>phpIPAM</th><th>Descrição no phpIPAM</th></tr></thead><tbody>'+(div.map(d=>`<tr><td class="mono">${esc(d.ip)}</td><td><button type="button" class="chip" data-dev="${d.id}">${esc(d.nome)}</button></td><td class="mono">${esc(d.ipam.nome)}</td><td>${esc(d.ipam.desc)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nenhuma divergência.</td></tr>')+'</tbody>';
+  /* nomes do phpIPAM estão desatualizados: a tabela de divergências foi retirada (o PRTG é a referência) */
   ligar($('sec-conf'));
 }
 
@@ -517,12 +527,16 @@ async function atualizar(){
     const r=await fetch('/api/snapshot',{cache:'no-store'});
     const j=await r.json();
     if(!j.sensores){ if(!D) $('banner').innerHTML=`<div class="banner warn">${esc(j.erro||'Aguardando a primeira coleta…')}</div>`; return setTimeout(atualizar,5000); }
-    if(j.gerado!==ultimoGerado||!D){ultimoGerado=j.gerado;D=j;render();} else {D.erro=j.erro;paineis();}
+    if(j.gerado!==ultimoGerado||!D){ultimoGerado=j.gerado;j.config=aplicarVisao(j.config);D=j;render();} else {D.erro=j.erro;paineis();}
   }catch(e){ $('pPrtg').className='pill bad'; $('pPrtg').textContent='servidor local fora'; $('banner').innerHTML=`<div class="banner">Sem contato com o servidor da topologia (${esc(e.message)}). Tentando de novo…</div>`; }
 }
 setInterval(()=>{if(D){const s=Math.round(Date.now()/1000-D.gerado);$('pAt').textContent=`coleta há ${s<90?s+' s':Math.round(s/60)+' min'}`;}},1000);
 try{const a=localStorage.getItem('topo-aba');if(a&&$('sec-'+a))abrirAba(a);}catch(e){}
 atualizar(); setInterval(atualizar,30000);
+{const b=$('trocaVisao');
+  if(VISAO==='dentro'){$('tituloMapa').textContent='Caminho do funcionário (rede interna) até os sistemas';const t=document.querySelector('[data-t="mapa"]');if(t)t.textContent='Caminho de dentro';}
+  b.textContent=VISAO==='dentro'?'🌍 ver de fora':'🏢 ver de dentro';b.href=VISAO==='dentro'?'/':'/?visao=dentro';
+  b.title='Trocar para a visão de '+(VISAO==='dentro'?'quem está fora (internet)':'quem está dentro (rede interna)');}
 </script>
 </body>
 </html>

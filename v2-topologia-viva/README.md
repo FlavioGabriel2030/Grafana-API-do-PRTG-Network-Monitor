@@ -17,6 +17,9 @@ A chave do PRTG **nunca vai para o navegador**: só o servidor fala com o PRTG.
 |---|---|
 | ![Mosaico](../docs/prints/mosaico.png) | ![Topologia](../docs/prints/topologia.png) |
 
+**Visão de dentro** (`/fluxo?visao=dentro`): o caminho de quem está na rede interna.
+![Fluxo: visão de dentro](../docs/prints/fluxo_dentro.png)
+
 *Prints feitos no modo demonstração, com dados fictícios.*
 
 ## Como funciona
@@ -30,9 +33,16 @@ PRTG ──(a cada 60 s)──> servidor.py ──(/api/snapshot a cada 20 s)─
 - **Telas sempre sincronizadas:** a resposta do servidor carrega uma `versao` (data dos arquivos). Se alguém editar uma tela, todas as TVs abertas recarregam sozinhas. Se o login expirar, a tela pede de novo em vez de congelar; dados com mais de 3 ciclos ficam marcados como "⚠ dados atrasados".
 - **Vigia (`vigia.pyw`):** roda sem janela, confere o servidor a cada 10 s e reinicia se ele cair ou parar de responder por 30 s.
 
+## Visão de fora e visão de dentro
+- **De fora** (padrão): usuário na internet → links → firewall → balanceador → serviços → dados.
+- **De dentro** (`?visao=dentro`, na Topologia e no Fluxo): funcionário → switches de acesso → núcleo (com virtualização e backup) → firewall entre VLANs e DNS interno → balanceador ou saída para a internet → sistemas → dados.
+- As duas usam **os mesmos sensores**; muda só o arranjo, definido em `config.json` → `dentro` (`camadas`, `nos` com a camada de cada item, `novos` e `ligacoes`).
+- Um botão no topo de cada tela troca de visão. A playlist da TV alterna **fora → dentro → mosaico**.
+
 ## Regras visuais do Fluxo
 - **Cor = velocidade**, escala logarítmica: `t = (ln(ms) − ln 30) / (ln 300 − ln 30)`, limitada a [0, 1]. 30 ms ou menos é ciano (rápido), cerca de 95 ms é verde (normal), 300 ms ou mais é amarelo (lento). Logarítmica porque dobrar de 20→40 ms pesa tanto quanto de 200→400 ms.
 - **A velocidade da bolinha sai da mesma decisão da cor**, em pixels por segundo (240 rápido → 60 lento), sem depender do comprimento do trecho. Aviso conta como lento: amarelo nunca corre mais que ciano.
+- **Tempo = mediana das 3 últimas medições** (robôs e sensores HTTP): o servidor busca o histórico curto a cada coleta. Um pico isolado não muda a cor; aparece só como nota no cartão ("última: 593 ms (pico)"). Queda e alerta vêm direto do status do PRTG, sem esperar a mediana.
 - **Tempo por item:** usa o sensor principal; se não houver, o menor tempo HTTP, e só por último o ping (mostrado como "ping X ms").
 - **Ocorrências em aberto:** sensores em Aviso, Fora do ar, Fora (reconhecido) ou Parcial. "Incomum" fica de fora (é só desvio estatístico), avisos de SSL viram uma linha só e os itens listados em `conhecidos` viram um resumo.
 

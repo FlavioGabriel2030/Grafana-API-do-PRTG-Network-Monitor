@@ -11,6 +11,8 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--cond);overflow:hidden}
 canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
 .topo{position:fixed;top:2vh;left:2vw;right:2vw;display:flex;align-items:flex-start;gap:2vw;pointer-events:none}
+.topo .k a.visao{color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:.05em .7em;pointer-events:auto}
+.topo .k a.visao:hover{border-color:var(--ink)}
 .topo .k{font:600 clamp(11px,1.3vh,16px) var(--mono);letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
 .topo h1{margin:.1em 0 0;font-size:clamp(32px,5.5vh,78px);font-weight:800;line-height:.95}
 .topo h1 em{font-style:normal;color:var(--vc,var(--ok))}
@@ -26,6 +28,7 @@ canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
 #cartao .st{font:700 clamp(14px,1.8vh,24px) var(--mono);color:var(--c)}
 #cartao .num{display:flex;gap:2vw;margin-top:1vh}
 #cartao .num div b{display:block;font-size:clamp(26px,4vh,54px);font-weight:700;line-height:1}
+#cartao .num div span.pico{display:block;color:var(--warn);opacity:.85}
 #cartao .num div span{font:clamp(10px,1.1vh,14px) var(--mono);color:var(--muted)}
 #cartao svg{width:100%;height:8vh}
 #cartao .num{margin-top:0;overflow:hidden}
@@ -57,7 +60,7 @@ canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
 </head>
 <body>
 <canvas id="tela"></canvas>
-<div class="topo"><div><div class="k">NOC · fluxo em tempo real</div><h1 id="titulo">Carregando…</h1></div><div class="hora"><b id="relogio">--:--</b><span id="data"></span></div></div>
+<div class="topo"><div><div class="k">NOC · fluxo em tempo real · <a id="visao" class="visao"></a></div><h1 id="titulo">Carregando…</h1></div><div class="hora"><b id="relogio">--:--</b><span id="data"></span></div></div>
 <div id="cartao" class="saindo"></div>
 <div class="rodape"><span id="coleta">—</span><i><b style="color:#38e1ff">●</b> ida (pedido) · <b style="color:#b69bff">●</b> volta (resposta) · cor = velocidade: <b style="color:#38e1ff">rápido</b> → <b style="color:#27d17f">normal</b> → <b style="color:#ffc53d">lento</b> · mais bolinhas = mais tráfego</i><i style="margin-left:auto;opacity:.45">Flavio-Gabriel</i><i><b style="color:var(--bad)">●</b> fora <b style="color:var(--warn)">●</b> aviso <b style="color:var(--paused)">●</b> pausado</i></div>
 <div id="avisos"></div>
@@ -65,8 +68,17 @@ canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
 <script>
 'use strict';
 if(new URLSearchParams(location.search).has('print'))document.documentElement.classList.add('sem-anim');  /* ?print: sem transição, para capturas de tela */
+/* Visão de fora (padrão) ou de dentro (?visao=dentro): mesmos nós e sensores, outras camadas e ligações (config.dentro). */
+const VISAO=new URLSearchParams(location.search).get('visao')==='dentro'?'dentro':'fora';
+function aplicarVisao(C){
+  if(VISAO!=='dentro'||!C.dentro) return C;
+  const V=C.dentro, base=new Map(C.nos.map(n=>[n.id,n]));
+  const nos=Object.entries(V.nos||{}).map(([id,o])=>base.has(id)?Object.assign({},base.get(id),o):null).filter(Boolean).concat(V.novos||[]);
+  nos.sort((a,b)=>a.camada-b.camada);
+  return Object.assign({},C,{camadas:V.camadas,nos,ligacoes:V.ligacoes});
+}
 const COR={ok:'#27d17f',warn:'#ffc53d',bad:'#ff4d6a',paused:'#5b8dff',known:'#d6a64a',neutro:'#3f5577'};
-const ICO={usuario:'🧑',instatus:'🌍',link_principal:'🌐',link_backup:'🔁',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',lai:'📨',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗'};
+const ICO={funcionario:'👩‍💼',switches:'🔌',usuario:'🧑',instatus:'🌍',link_principal:'🌐',link_backup:'🔁',fortigate:'🧱',vpn:'🔐',f5:'⚖️',site:'🏛️',consulta:'🔎',normativos:'📜',plenaria:'🗳️',sic:'📨',ged:'🗂️',soea:'🎓',cpa:'🛡️',fiscalizacao:'📋',sei:'📄',osticket:'🎫',drupal:'🧩',banco_soea:'🗄️',bancos:'🗄️',lai:'📨',core1:'🧠',core2:'🧠',dns:'📖',virtual:'🖥️',backup:'💾',integradores:'🔗'};
 const pausadoSt=c=>[7,8,9,11,12].includes(c);
 const sevSt=c=>({5:6,13:6,14:6,4:4,10:3,7:1,8:1,9:1,11:1,12:1,3:0}[c]??0);
 const corSev=s=>s===6?COR.bad:s>=3?COR.warn:s===2?COR.known:s===1?COR.paused:COR.ok;
@@ -78,6 +90,8 @@ let D=null, NOS={}, ARESTAS=[], PART=[], W=0, H=0, DPR=1, tour=[], tourI=-1, foc
 const RASTRO=!matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function mbit(v){const m=String(v||'').match(/([\d.,]+)\s*([kMG])bit/i);if(!m)return null;return parseFloat(m[1].replace(/\./g,'').replace(',','.'))*({k:.001,M:1,G:1000}[m[2]]||1);}
+/* tempo do sensor: mediana das 3 últimas medições quando o servidor manda (med); senão o último valor */
+function msS(x){return x.med!=null?x.med:ms(x.val);}
 function ms(v){const m=String(v||'').match(/([\d.,]+)\s*ms/);return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null;}
 
 function avaliar(){
@@ -93,12 +107,12 @@ function avaliar(){
     const base=n.valorDe?sens.get(n.valorDe):(n.capacidadeMbit||n.mostrarValor)?ss[0]:null;
     const okN=ss.filter(x=>sevSt(x.st)<3||conh[String(x.id)]).length;
     // ms para TODOS: o sensor principal; se não houver, o 1º com tempo (HTTP/Ping); em grupos, a mediana
-    let tms=base?ms(base.val):null, viaPing=false;
-    if(tms==null){const cand=ss.filter(x=>!pausadoSt(x.st)&&ms(x.val)!=null);
+    let tms=base?msS(base):null, viaPing=false, fonte=base&&tms!=null?base:null;
+    if(tms==null){const cand=ss.filter(x=>!pausadoSt(x.st)&&msS(x)!=null);
       const http=cand.filter(x=>!/ping/i.test(x.nome)), usa=http.length?http:cand;
-      const vs=usa.map(x=>ms(x.val)).sort((a,b)=>a-b);
-      if(vs.length){tms=n.grupoNome?vs[Math.floor(vs.length/2)]:vs[0];viaPing=!http.length;}}
-    out[n.id]={n,sev,pior,base,total:ss.length,okN,ms:tms,viaPing,mb:base?mbit(base.val):null};
+      const os=usa.slice().sort((a,b)=>msS(a)-msS(b)), vs=os.map(msS);
+      if(vs.length){const k=n.grupoNome?Math.floor(vs.length/2):0;tms=vs[k];fonte=os[k];viaPing=!http.length;}}
+    out[n.id]={n,sev,pior,base,total:ss.length,okN,ms:tms,viaPing,pico:fonte&&fonte.ult!=null&&fonte.med!=null&&fonte.ult>Math.max(100,fonte.med*1.8)?fonte.ult:null,mb:base?mbit(base.val):null};
   });
   return out;
 }
@@ -107,7 +121,7 @@ function layout(){
   const porCam={}; D.config.nos.forEach(n=>(porCam[n.camada]??=[]).push(n.id));
   Object.entries(porCam).forEach(([c,ids])=>{
     /* só a coluna muito cheia (mais de 6) vira zigue-zague; as outras ficam em fila, com mais altura útil */
-    const cheia=ids.length>6, centro=esq+(dir-esq)*(+c)/(cam-1);
+    const cheia=ids.length>6, centro=esq+(dir-esq)*(+c)/(cam-1)-(cheia&&+c===cam-1?off:0);  /* última coluna cheia puxa para dentro da tela */
     ids.forEach((id,i)=>{const x=centro+(cheia?(i%2?1:-1)*off:0), y=top+(bot-top)*(i+0.5)/ids.length;
       const o=NOS[id]||{};NOS[id]=Object.assign(o,{x,y});});});
 }
@@ -308,7 +322,7 @@ async function proximo(){
     $('cR').textContent=`${tourI+1} de ${tour.length} · ${D.config.camadas[n.n.camada]||''}`;
     $('cH').textContent=`${ICO[n.n.id]||''} ${n.n.rotulo}`;
     $('cSt').textContent=txtSev(n.sev);
-    $('cNum').innerHTML=`${n.ms!=null?`<div><b>${Math.round(n.ms)}<small style="font-size:.45em"> ms</small></b><span>${n.viaPing?'ping':'tempo de resposta'}</span></div>`:''}${n.mb!=null?`<div><b>${Math.round(n.mb)}<small style="font-size:.45em"> Mbit/s</small></b><span>tráfego agora</span></div>`:''}<div><b>${ligs}</b><span>ligações</span></div>`;
+    $('cNum').innerHTML=`${n.ms!=null?`<div><b>${Math.round(n.ms)}<small style="font-size:.45em"> ms</small></b><span>${n.viaPing?'ping':'tempo de resposta'+(n.pico==null?' · mediana':'')}</span>${n.pico!=null?`<span class="pico">última: ${Math.round(n.pico)} ms (pico)</span>`:''}</div>`:''}${n.mb!=null?`<div><b>${Math.round(n.mb)}<small style="font-size:.45em"> Mbit/s</small></b><span>tráfego agora</span></div>`:''}<div><b>${ligs}</b><span>ligações</span></div>`;
     $('cGraf').innerHTML=`${vals?spark(vals,c)+'<div class="msg">últimas 6 h</div>':''}<div class="msg">${esc(n.pior&&n.pior.msg&&n.pior.msg!=='OK'?n.pior.nome+' — '+n.pior.msg.split(/[—(]/)[0].trim():n.n.sub||'')}</div>`;
     const f=filaAlertas(); if(f!==FILA_HTML){FILA_HTML=f;$('cFila').innerHTML=f;}  /* a lista só é refeita se mudou: a rolagem não reinicia */
     partes.forEach(x=>x.classList.remove('apaga'));
@@ -321,23 +335,26 @@ async function atualizar(){
     const j=await r.json();
     if(!j.sensores) throw new Error(j.erro||'sem dados');
     if(j.versao&&VERSAO&&j.versao!==VERSAO){location.reload();return;}  /* tela foi atualizada no servidor */
-    VERSAO=j.versao||VERSAO; D=j;montar();$('erro').style.display='none';}
+    VERSAO=j.versao||VERSAO; j.config=aplicarVisao(j.config); D=j;montar();$('erro').style.display='none';}
   catch(e){$('erro').style.display='block';$('erro').textContent='Sem contato com o servidor da topologia. Tentando de novo…';}
 }
 setInterval(()=>{const d=new Date();$('relogio').textContent=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});$('data').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});if(D)topo();},1000);
+{const a=$('visao'),q=new URLSearchParams(location.search);q.delete('visao');if(VISAO==='fora')q.set('visao','dentro');
+ a.textContent=VISAO==='dentro'?'🏢 visão de dentro':'🌍 visão de fora';a.title='Trocar para a visão de '+(VISAO==='dentro'?'fora':'dentro');a.href='/fluxo'+(q.toString()?'?'+q:'');}
 redimensionar(); requestAnimationFrame(quadro);
 atualizar().then(proximo); setInterval(atualizar,20000); setInterval(proximo,9000);
 </script>
 <script>
 /* Playlist para TV: /fluxo?playlist  (ou ?playlist=fluxo,mosaico&t=120). Alterna sozinho entre as telas. */
 (function(){const q=new URLSearchParams(location.search);if(!q.has('playlist'))return;
-  const telas=(q.get('playlist')||'fluxo,mosaico').split(',').map(s=>s.trim()).filter(Boolean), t=Math.max(30,+q.get('t')||120);
-  const atual=location.pathname.replace('/','')||telas[0], prox=telas[(telas.indexOf(atual)+1)%telas.length];
+  /* telas: fluxo (visão de fora), fluxo-dentro (visão de dentro), mosaico */
+  const telas=(q.get('playlist')||'fluxo,fluxo-dentro,mosaico').split(',').map(s=>s.trim()).filter(Boolean), t=Math.max(30,+q.get('t')||120);
+  const pag=location.pathname.replace('/','')||'fluxo', atual=pag+(q.get('visao')==='dentro'?'-dentro':''), prox=telas[(Math.max(0,telas.indexOf(atual))+1)%telas.length];
   const fim=Date.now()+t*1000, b=document.createElement('div');
   b.style.cssText='position:fixed;left:50%;top:.6vh;transform:translateX(-50%);font:12px Consolas,monospace;color:#7f93b2;background:rgba(8,12,22,.85);border:1px solid #1c2a42;border-radius:99px;padding:2px 10px;z-index:9';
   document.body.appendChild(b);
   setInterval(()=>{const r=Math.max(0,Math.round((fim-Date.now())/1000));b.textContent=`▶ playlist: troca para ${prox} em ${Math.floor(r/60)}:${String(r%60).padStart(2,'0')} · para fixar, abra sem ?playlist`;},1000);
-  setTimeout(()=>{location.href=`/${prox}?${q.toString()}`;},t*1000);})();
+  setTimeout(()=>{const [p,v]=prox.split('-');q.delete('visao');if(v==='dentro')q.set('visao','dentro');location.href=`/${p}?${q.toString()}`;},t*1000);})();
 </script>
 </body>
 </html>

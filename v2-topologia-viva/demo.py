@@ -25,6 +25,9 @@ EXTRAS = [  # (device, sensor, status, mensagem, valor)
 ]
 
 
+ULTIMO_MS = {}  # tempo atual de cada sensor fictício: o histórico curto gira em torno dele
+
+
 def _id_hash(s):
     return sum(ord(c) * (i + 1) for i, c in enumerate(str(s)))
 
@@ -66,6 +69,7 @@ def _montar(config):
                        'CPU acima de 80%' if st == AVISO else 'OK', 'ping')
             else:
                 ms = BASE_MS.get(n['id'], 60) * _onda(sid, .25)
+                ULTIMO_MS[str(sid)] = ms
                 sensor(sid, dev, 'Robô sentinela: página carregou', f'{round(ms)} ms')
     for j in range(3):  # o item "Bancos de dados" soma um grupo inteiro
         dev = device(f'banco-{j + 1:02d}', f'10.0.60.{j + 10}', pai=60)
@@ -118,7 +122,9 @@ def _serie(sid, inicio, fim, avg):
         dia = math.sin((t.hour + t.minute / 60 - 6) / 24 * 2 * math.pi)  # pico no meio do dia
         ruido = random.uniform(.85, 1.15)
         mbit = max(.2, (18 + 50 * max(0, dia)) * escala * ruido)
-        ms = (40 + h % 120) * (1 + .25 * max(0, dia)) * ruido + (400 if random.random() < .01 else 0)
+        base = ULTIMO_MS.get(str(sid))
+        ms = (base * random.uniform(.9, 1.1) if base and (fim - t).total_seconds() < 3600
+              else (40 + h % 120) * (1 + .25 * max(0, dia)) * ruido + (400 if random.random() < .01 else 0))
         fora = 0.0 if random.random() > .04 else round(random.uniform(.1, 1.5), 2)
         bps = mbit * 1e6 / 8
         yield t, {CANAIS_TRAFEGO[0]: bps, CANAIS_TRAFEGO[1]: bps, CANAIS_TRAFEGO[2]: bps * .68, CANAIS_TRAFEGO[3]: bps * .32,

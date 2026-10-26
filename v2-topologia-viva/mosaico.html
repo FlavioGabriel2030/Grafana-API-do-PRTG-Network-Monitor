@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mosaico NOC</title>
+<title>Mosaico NOC NOC</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 :root{--bg0:#050912;--ink:#eaf2ff;--muted:#7f93b2;--line:#1c2a42;--ok:#27d17f;--warn:#ffc53d;--bad:#ff4d6a;--unusual:#ff8c42;--paused:#5b8dff;--known:#d6a64a;
@@ -176,13 +176,14 @@ atualizar(); setInterval(atualizar,20000);
 <script>
 /* Playlist para TV: /fluxo?playlist  (ou ?playlist=fluxo,mosaico&t=120). Alterna sozinho entre as telas. */
 (function(){const q=new URLSearchParams(location.search);if(!q.has('playlist'))return;
-  const telas=(q.get('playlist')||'fluxo,mosaico').split(',').map(s=>s.trim()).filter(Boolean), t=Math.max(30,+q.get('t')||120);
-  const atual=location.pathname.replace('/','')||telas[0], prox=telas[(telas.indexOf(atual)+1)%telas.length];
+  /* telas: fluxo (visão de fora), fluxo-dentro (visão de dentro), mosaico */
+  const telas=(q.get('playlist')||'fluxo,fluxo-dentro,mosaico').split(',').map(s=>s.trim()).filter(Boolean), t=Math.max(30,+q.get('t')||120);
+  const pag=location.pathname.replace('/','')||'fluxo', atual=pag+(q.get('visao')==='dentro'?'-dentro':''), prox=telas[(Math.max(0,telas.indexOf(atual))+1)%telas.length];
   const fim=Date.now()+t*1000, b=document.createElement('div');
   b.style.cssText='position:fixed;left:50%;top:.6vh;transform:translateX(-50%);font:12px Consolas,monospace;color:#7f93b2;background:rgba(8,12,22,.85);border:1px solid #1c2a42;border-radius:99px;padding:2px 10px;z-index:9';
   document.body.appendChild(b);
   setInterval(()=>{const r=Math.max(0,Math.round((fim-Date.now())/1000));b.textContent=`▶ playlist: troca para ${prox} em ${Math.floor(r/60)}:${String(r%60).padStart(2,'0')} · para fixar, abra sem ?playlist`;},1000);
-  setTimeout(()=>{location.href=`/${prox}?${q.toString()}`;},t*1000);})();
+  setTimeout(()=>{const [p,v]=prox.split('-');q.delete('visao');if(v==='dentro')q.set('visao','dentro');location.href=`/${p}?${q.toString()}`;},t*1000);})();
 </script>
 </body>
 </html>
